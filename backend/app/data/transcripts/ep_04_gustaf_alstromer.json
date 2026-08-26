@@ -1,0 +1,24 @@
+[
+  {
+    "id": "gustaf_01",
+    "episode_id": "EP-04",
+    "episode_title": "Gustaf Alströmer on Finding Product-Market Fit, Retention Curves, and the YC Growth Playbook",
+    "guest": "Gustaf Alströmer",
+    "guest_bio": "Group Partner at Y Combinator, former Head of Growth at Airbnb.",
+    "source_url": "https://www.lennyspodcast.com/gustaf-alstromer-on-finding-product-market-fit-retention-curves-and-the-yc-growth-playbook/",
+    "topic": "Product-Market Fit, Retention Curves, Cohort Analysis",
+    "timestamp": "06:40",
+    "text": "The only reliable mathematical definition of Product-Market Fit is a retention curve that flattens parallel to the x-axis. If your retention curve keeps sloping downward toward zero, you do not have PMF, no matter how much revenue or top-of-funnel traffic you have. A leaky bucket cannot be solved by pouring in more water with paid marketing. Fix the retention floor first."
+  },
+  {
+    "id": "gustaf_02",
+    "episode_id": "EP-04",
+    "episode_title": "Gustaf Alströmer on Finding Product-Market Fit, Retention Curves, and the YC Growth Playbook",
+    "guest": "Gustaf Alströmer",
+    "guest_bio": "Group Partner at Y Combinator, former Head of Growth at Airbnb.",
+    "source_url": "https://www.lennyspodcast.com/gustaf-alstromer-on-finding-product-market-fit-retention-curves-and-the-yc-growth-playbook/",
+    "topic": "YC Advice, Talk to Users, Do Things That Don't Scale",
+    "timestamp": "24:15",
+    "text": "The number one mistake early-stage founders make is building in isolation. At YC, we tell founders: write code and talk to users. That is your entire job. Don't spend weeks building complex automated onboarding when you have 10 users. Onboard those 10 users manually over Zoom. Watch where their mouse pauses, listen to where they get confused, and fix the friction in real time."
+  }
+]

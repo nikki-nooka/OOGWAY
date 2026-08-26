@@ -1,0 +1,35 @@
+[
+  {
+    "id": "shreyas_01",
+    "episode_id": "EP-01",
+    "episode_title": "Shreyas Doshi on High Agency, Good PM vs. Great PM, and the LNO Framework",
+    "guest": "Shreyas Doshi",
+    "guest_bio": "Former Product Leader at Stripe, Twitter, Google, and Yahoo.",
+    "source_url": "https://www.lennyspodcast.com/shreyas-doshi-on-high-agency-good-pm-vs-great-pm-and-the-lno-framework/",
+    "topic": "Product Management, Career, LNO Framework, High Agency",
+    "timestamp": "14:20",
+    "text": "The single most important skill for senior product managers is high agency. High agency is about finding a way to get what you want, even when the odds are stacked against you or the path isn't obvious. Low agency people accept the constraints of the world as given. High agency people bend reality to their will. When a problem looks impossible, a high agency PM asks: 'If I had to solve this in 48 hours, what would I do?' They don't wait for permission."
+  },
+  {
+    "id": "shreyas_02",
+    "episode_id": "EP-01",
+    "episode_title": "Shreyas Doshi on High Agency, Good PM vs. Great PM, and the LNO Framework",
+    "guest": "Shreyas Doshi",
+    "guest_bio": "Former Product Leader at Stripe, Twitter, Google, and Yahoo.",
+    "source_url": "https://www.lennyspodcast.com/shreyas-doshi-on-high-agency-good-pm-vs-great-pm-and-the-lno-framework/",
+    "topic": "Time Management, LNO Framework, Prioritization",
+    "timestamp": "28:45",
+    "text": "The LNO Framework classifies tasks into Leverage, Neutral, and Overhead. L tasks are high leverage tasks where an exceptional job yields 10x or 100x return. These require your best energy, deep focus, and uncompromised craftsmanship. N tasks are neutral tasks where doing an okay job is totally sufficient—more effort produces diminishing returns. O tasks are overhead tasks where you should aim for 'just good enough' or actively delegate and automate them. Most PMs burn out because they try to do O tasks with L-task perfection."
+  },
+  {
+    "id": "shreyas_03",
+    "episode_id": "EP-01",
+    "episode_title": "Shreyas Doshi on High Agency, Good PM vs. Great PM, and the LNO Framework",
+    "guest": "Shreyas Doshi",
+    "guest_bio": "Former Product Leader at Stripe, Twitter, Google, and Yahoo.",
+    "source_url": "https://www.lennyspodcast.com/shreyas-doshi-on-high-agency-good-pm-vs-great-pm-and-the-lno-framework/",
+    "topic": "Strategy, Impact vs Effort, Product Pitfalls",
+    "timestamp": "42:10",
+    "text": "One of the most dangerous traps in product roadmapping is the classic 2x2 'Impact vs Effort' matrix. Why? Because we consistently overestimate impact and underestimate effort. A great PM focuses on understanding the existential customer risk first. If you don't validate whether the customer fundamentally cares about the problem, high effort or low effort doesn't matter. Zero value multiplied by fast execution is still zero value."
+  }
+]

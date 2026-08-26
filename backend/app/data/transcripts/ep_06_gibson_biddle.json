@@ -1,0 +1,24 @@
+[
+  {
+    "id": "gibson_01",
+    "episode_id": "EP-06",
+    "episode_title": "Gibson Biddle on Product Strategy, the DHM Model, and Netflix Metrics",
+    "guest": "Gibson Biddle",
+    "guest_bio": "Former VP of Product at Netflix and Chief Product Officer at Chegg.",
+    "source_url": "https://www.lennyspodcast.com/gibson-biddle-on-product-strategy-the-dhm-model-and-netflix-metrics/",
+    "topic": "DHM Framework, Delight, Hard to Copy, Margin Enhancing",
+    "timestamp": "09:12",
+    "text": "Strategy is how your product will Delight customers in Hard-to-copy, Margin-enhancing ways (the DHM model). Delight is table stakes—if users don't love your product, you have nothing. But delight without hard-to-copy advantage means competitors will clone you overnight. The four hardest-to-copy advantages are: 1) Network effects, 2) Brand, 3) Scale economies, and 4) Unique technology or algorithms (like Netflix's recommendation engine). Finally, margin-enhancing means you have a business model that creates durable gross profits."
+  },
+  {
+    "id": "gibson_02",
+    "episode_id": "EP-06",
+    "episode_title": "Gibson Biddle on Product Strategy, the DHM Model, and Netflix Metrics",
+    "guest": "Gibson Biddle",
+    "guest_bio": "Former VP of Product at Netflix and Chief Product Officer at Chegg.",
+    "source_url": "https://www.lennyspodcast.com/gibson-biddle-on-product-strategy-the-dhm-model-and-netflix-metrics/",
+    "topic": "Metrics, North Star Metric, Retention vs Engagement",
+    "timestamp": "31:40",
+    "text": "At Netflix, we realized monthly retention was our top-level health metric, but retention is a lagging indicator. You can't ask an engineering team to 'increase retention by 2%' this sprint. You need proxy metrics. For Netflix, our proxy metric was 'the percentage of members who rated at least 50 titles in their first month' or 'streamed at least 15 hours of video a week'. Find the leading behavioral metric that correlates 90%+ with long-term retention."
+  }
+]

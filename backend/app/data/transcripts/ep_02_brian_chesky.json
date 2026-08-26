@@ -1,0 +1,35 @@
+[
+  {
+    "id": "chesky_01",
+    "episode_id": "EP-02",
+    "episode_title": "Brian Chesky on Founder Mode, Product Design, and Reinventing Airbnb",
+    "guest": "Brian Chesky",
+    "guest_bio": "Co-founder and CEO of Airbnb.",
+    "source_url": "https://www.lennyspodcast.com/brian-chesky-on-founder-mode-product-design-and-reinventing-airbnb/",
+    "topic": "Founder Mode, Management, Product Reviews",
+    "timestamp": "08:15",
+    "text": "What people call 'Founder Mode' is really about getting into the details. Traditional management advice told founders: hire great people, give them autonomy, and step back. At Airbnb, that almost killed us. When you delegate everything, you get dozens of disconnected roadmaps and bureaucratic bloat. I run a single integrated roadmap. I review every single product feature and pixel before it ships. As a leader, you need to understand both the 30,000-foot vision and the 3-foot execution detail."
+  },
+  {
+    "id": "chesky_02",
+    "episode_id": "EP-02",
+    "episode_title": "Brian Chesky on Founder Mode, Product Design, and Reinventing Airbnb",
+    "guest": "Brian Chesky",
+    "guest_bio": "Co-founder and CEO of Airbnb.",
+    "source_url": "https://www.lennyspodcast.com/brian-chesky-on-founder-mode-product-design-and-reinventing-airbnb/",
+    "topic": "11-Star Experience, Product-Led Growth, Delight",
+    "timestamp": "22:50",
+    "text": "To build an unforgettable product, design an 11-star experience. A 5-star experience is: you knock on the door, the host opens, the room is clean. A 6-star experience is: there's a bottle of wine and a personalized note. A 7-star is: they have a surfboard ready for you. An 8-star is: an elephant meets you at the airport. A 10-star is: you arrive with 5,000 screaming fans. You can't ship the 10-star or 11-star experience, but once you imagine it, you can easily pull back and ship a 7-star experience that blows people away and creates natural viral word-of-mouth."
+  },
+  {
+    "id": "chesky_03",
+    "episode_id": "EP-02",
+    "episode_title": "Brian Chesky on Founder Mode, Product Design, and Reinventing Airbnb",
+    "guest": "Brian Chesky",
+    "guest_bio": "Co-founder and CEO of Airbnb.",
+    "source_url": "https://www.lennyspodcast.com/brian-chesky-on-founder-mode-product-design-and-reinventing-airbnb/",
+    "topic": "Product Marketing, Combining PM and PMM",
+    "timestamp": "37:40",
+    "text": "We got rid of the traditional classic product management role and combined it with product marketing. If you build something and you can't articulate how to explain it to a customer in one sentence, you shouldn't build it in the first place. You have to start with the press release and the customer story, not with an internal Jira ticket."
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "elena_01",
+    "episode_id": "EP-03",
+    "episode_title": "Elena Verna on B2B Product-Led Growth, Viral Loops, and Freemium vs Trial",
+    "guest": "Elena Verna",
+    "guest_bio": "Growth Advisor (Miro, Amplitude, Dropbox, SurveyMonkey, Netlify).",
+    "source_url": "https://www.lennyspodcast.com/elena-verna-on-b2b-product-led-growth-viral-loops-and-freemium-vs-trial/",
+    "topic": "B2B PLG, Product-Led Growth, Growth Loops",
+    "timestamp": "11:30",
+    "text": "Product-Led Growth is not a marketing or sales tactic—it is a company-wide distribution mechanism where your product drives user acquisition, conversion, retention, and expansion. In B2B, the best PLG models focus on the end-user first. You solve an atomic problem for a single individual so quickly that they invite their coworkers, turning one seat into an enterprise deployment."
+  },
+  {
+    "id": "elena_02",
+    "episode_id": "EP-03",
+    "episode_title": "Elena Verna on B2B Product-Led Growth, Viral Loops, and Freemium vs Trial",
+    "guest": "Elena Verna",
+    "guest_bio": "Growth Advisor (Miro, Amplitude, Dropbox, SurveyMonkey, Netlify).",
+    "source_url": "https://www.lennyspodcast.com/elena-verna-on-b2b-product-led-growth-viral-loops-and-freemium-vs-trial/",
+    "topic": "Freemium vs Free Trial, Monetization, Paywalls",
+    "timestamp": "29:15",
+    "text": "The choice between Freemium and Free Trial comes down to your time-to-value. If your product requires complex setup or team collaboration to see value (like Miro or Figma), Freemium is essential because you need indefinite usage to form a habit and trigger collaboration loops. If your product delivers immediate, high value to an individual within 10 minutes, a time-bound Free Trial creates urgency and drives conversion."
+  },
+  {
+    "id": "elena_03",
+    "episode_id": "EP-03",
+    "episode_title": "Elena Verna on B2B Product-Led Growth, Viral Loops, and Freemium vs Trial",
+    "guest": "Elena Verna",
+    "guest_bio": "Growth Advisor (Miro, Amplitude, Dropbox, SurveyMonkey, Netlify).",
+    "source_url": "https://www.lennyspodcast.com/elena-verna-on-b2b-product-led-growth-viral-loops-and-freemium-vs-trial/",
+    "topic": "Product-Led Sales, Sales Assist",
+    "timestamp": "48:00",
+    "text": "Product-Led Sales (PLS) is the natural evolution of PLG. When you have thousands of active free users, sales reps shouldn't be cold calling. They should be looking at Product Qualified Leads (PQLs)—teams exhibiting viral spread, approaching usage ceilings, or sharing sensitive company data. Sales then steps in not to sell features, but to sell security, compliance, SSO, and volume pricing."
+  }
+]

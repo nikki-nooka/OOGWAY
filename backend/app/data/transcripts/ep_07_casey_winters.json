@@ -1,0 +1,24 @@
+[
+  {
+    "id": "casey_01",
+    "episode_id": "EP-07",
+    "episode_title": "Casey Winters on Growth Loops, The Cold Start Problem, and Retention",
+    "guest": "Casey Winters",
+    "guest_bio": "Former CPO at Eventbrite, Growth Lead at Pinterest and Grubhub.",
+    "source_url": "https://www.lennyspodcast.com/casey-winters-on-growth-loops-the-cold-start-problem-and-retention/",
+    "topic": "Growth Loops, Funnels vs Loops, Self-Sustaining Systems",
+    "timestamp": "12:30",
+    "text": "Traditional marketing thinks in linear funnels (Acquisition -> Activation -> Retention -> Referral). But funnels lose momentum at the bottom. Sustainable growth comes from Growth Loops, where the output of one cycle becomes the input for the next cycle. At Pinterest, a user searches Google, finds a pin on Pinterest, saves that pin to a board, which gets indexed by Google, bringing in the next user. That is a self-reinforcing SEO loop."
+  },
+  {
+    "id": "casey_02",
+    "episode_id": "EP-07",
+    "episode_title": "Casey Winters on Growth Loops, The Cold Start Problem, and Retention",
+    "guest": "Casey Winters",
+    "guest_bio": "Former CPO at Eventbrite, Growth Lead at Pinterest and Grubhub.",
+    "source_url": "https://www.lennyspodcast.com/casey-winters-on-growth-loops-the-cold-start-problem-and-retention/",
+    "topic": "Marketplace Dynamics, Cold Start, Supply vs Demand",
+    "timestamp": "28:10",
+    "text": "When solving the Cold Start Problem in two-sided marketplaces, almost always subsidize and solve the harder side of the market first (usually supply). At Grubhub, having the 20 best local restaurants meant hungry diners came naturally. At Eventbrite, getting unique event creators drove ticket buyers. If you don't constrain your atomic network geographically or categorically, you spread yourself too thin and both sides churn."
+  }
+]

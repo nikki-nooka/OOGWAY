@@ -1,0 +1,24 @@
+[
+  {
+    "id": "rahul_01",
+    "episode_id": "EP-05",
+    "episode_title": "Rahul Vohra on The Superhuman Product-Market Fit Engine and Pricing Strategy",
+    "guest": "Rahul Vohra",
+    "guest_bio": "Founder and CEO of Superhuman.",
+    "source_url": "https://www.lennyspodcast.com/rahul-vohra-on-the-superhuman-product-market-fit-engine-and-pricing-strategy/",
+    "topic": "PMF Engine, Sean Ellis Test, 40% Disappointed Rule",
+    "timestamp": "10:05",
+    "text": "We built the Superhuman Product-Market Fit Engine by asking users: 'How would you feel if you could no longer use Superhuman?' Options: 1) Very disappointed, 2) Somewhat disappointed, 3) Not disappointed. Sean Ellis benchmarked that if 40% or more say 'Very disappointed', you have PMF. When we first measured, we were at 22%. By segmenting our 'high-expectation customers' (HECs) and only doubling down on what they loved while fixing what held back the 'somewhat disappointed' cohort, we increased that metric to 58%."
+  },
+  {
+    "id": "rahul_02",
+    "episode_id": "EP-05",
+    "episode_title": "Rahul Vohra on The Superhuman Product-Market Fit Engine and Pricing Strategy",
+    "guest": "Rahul Vohra",
+    "guest_bio": "Founder and CEO of Superhuman.",
+    "source_url": "https://www.lennyspodcast.com/rahul-vohra-on-the-superhuman-product-market-fit-engine-and-pricing-strategy/",
+    "topic": "Pricing, Premium Positioning, Van Westendorp Price Sensitivity",
+    "timestamp": "34:20",
+    "text": "Everyone told us charging $30/month for an email client was suicidal. But pricing is positioning. If you charge $2/month, people assume it is a commodity. If you charge $30/month, you signal elite craftsmanship, speed, and status. We used the Van Westendorp Price Sensitivity Meter to identify the optimal price band where customers felt it was expensive but worth every penny for saved time."
+  }
+]
