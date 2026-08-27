@@ -165,7 +165,7 @@ export default function MessageItem({
                 }}
                 title="Apply these principles to your specific startup stage, metrics, and constraints"
               >
-                <Target size={12} color="var(--color-primary-forest, #245D55)" />
+                <Target size={12} color="var(--accent-secondary, #245D55)" />
                 <span>Apply to My Context</span>
               </button>
 
@@ -209,7 +209,7 @@ export default function MessageItem({
                 }}
                 title="Generate an Experiment Brief with hypothesis, sample size, and guardrails"
               >
-                <FlaskConical size={12} color="#2563eb" />
+                <FlaskConical size={12} color="var(--status-info, #2B5C7D)" />
                 <span>Experiment Brief</span>
               </button>
 
@@ -253,7 +253,7 @@ export default function MessageItem({
                 }}
                 title="Transform answer into a ~1,250-word Ship 30 atomic essay"
               >
-                <PenTool size={12} color="var(--color-primary-forest, #245D55)" />
+                <PenTool size={12} color="var(--accent-secondary, #245D55)" />
                 <span>Ship 30 Essay</span>
               </button>
             </div>

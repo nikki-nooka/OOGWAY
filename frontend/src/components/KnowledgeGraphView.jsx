@@ -30,7 +30,7 @@ export default function KnowledgeGraphView({ onStartChat, onOpenFramework }) {
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
       {/* Header */}
       <div style={{ marginBottom: '2rem', borderBottom: '1px solid var(--border-medium)', paddingBottom: '1.5rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(36, 93, 85, 0.1)', color: 'var(--color-primary-forest, #245D55)', padding: '0.35rem 0.75rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(36, 93, 85, 0.1)', color: 'var(--accent-secondary, #245D55)', padding: '0.35rem 0.75rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
           🕸️ Relational Knowledge Map
         </div>
         <h1 style={{ fontFamily: 'var(--text-serif-display, serif)', fontSize: '2.4rem', fontWeight: 400, color: 'var(--text-primary)', margin: '0 0 0.5rem 0' }}>

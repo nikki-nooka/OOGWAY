@@ -101,7 +101,7 @@ export default function ChatArea({
             style={{ padding: '5px 10px', fontSize: '12px' }}
             title="Browse Lenny's Podcast Transcripts"
           >
-            <BookOpen size={13} color="var(--accent)" />
+            <BookOpen size={13} color="var(--accent-primary)" />
             <span style={{ display: 'inline-block' }}>Knowledge Base</span>
           </button>
 

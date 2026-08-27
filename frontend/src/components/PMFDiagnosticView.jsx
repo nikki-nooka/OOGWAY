@@ -134,13 +134,13 @@ export default function PMFDiagnosticView({ onStartChat }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', margin: '0.5rem 0' }}>
-              <span style={{ fontSize: '3rem', fontFamily: 'var(--text-serif-display)', fontWeight: 600, color: result.score >= 75 ? 'var(--color-primary-forest, #245D55)' : result.score >= 50 ? 'var(--accent-primary, #9A5B2E)' : '#dc2626' }}>
+              <span style={{ fontSize: '3rem', fontFamily: 'var(--text-serif-display)', fontWeight: 600, color: result.score >= 75 ? 'var(--accent-secondary, #245D55)' : result.score >= 50 ? 'var(--accent-primary, #9A5B2E)' : 'var(--status-danger, #A33A3A)' }}>
                 {result.score}
               </span>
               <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', fontWeight: 600 }}>/ 100</span>
             </div>
 
-            <div style={{ display: 'inline-block', padding: '0.35rem 0.75rem', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, backgroundColor: result.score >= 75 ? 'rgba(36, 93, 85, 0.12)' : result.score >= 50 ? 'rgba(154, 91, 46, 0.12)' : 'rgba(220, 38, 38, 0.12)', color: result.score >= 75 ? 'var(--color-primary-forest, #245D55)' : result.score >= 50 ? 'var(--accent-primary, #9A5B2E)' : '#dc2626', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'inline-block', padding: '0.35rem 0.75rem', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, backgroundColor: result.score >= 75 ? 'rgba(36, 93, 85, 0.12)' : result.score >= 50 ? 'rgba(154, 91, 46, 0.12)' : 'rgba(163, 58, 58, 0.12)', color: result.score >= 75 ? 'var(--accent-secondary, #245D55)' : result.score >= 50 ? 'var(--accent-primary, #9A5B2E)' : 'var(--status-danger, #A33A3A)', marginBottom: '1.25rem' }}>
               Status: {result.status}
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Scale, Sparkles, FileText } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -8,6 +8,27 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
   const [optionB, setOptionB] = useState('Top-Down Enterprise Sales Motion');
   const [constraints, setConstraints] = useState('3-person engineering team, 8 months runway, high top-of-funnel traffic.');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -30,18 +51,18 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="modal-content-card" style={{ maxWidth: '640px' }} onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose}>
+        <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
           <X size={18} />
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
           <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            backgroundColor: 'var(--accent-primary, #9A5B2E)',
+            width: '34px',
+            height: '34px',
+            borderRadius: 'var(--radius-sm)',
+            backgroundColor: 'var(--accent-primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -50,7 +71,7 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
             <Scale size={18} />
           </div>
           <div>
-            <h2 style={{ fontFamily: 'var(--text-serif-display, serif)', fontSize: '1.4rem', color: 'var(--text-primary)', margin: 0 }}>
+            <h2 style={{ fontFamily: 'var(--text-serif-display)', fontSize: '1.4rem', color: 'var(--text-primary)', margin: 0 }}>
               Decision Mode & Memo Generator
             </h2>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -72,7 +93,7 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
               style={{
                 width: '100%',
                 padding: '0.65rem 0.85rem',
-                borderRadius: '6px',
+                borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border-medium)',
                 backgroundColor: 'var(--bg-input)',
                 color: 'var(--text-primary)',
@@ -93,7 +114,7 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
                 style={{
                   width: '100%',
                   padding: '0.65rem 0.85rem',
-                  borderRadius: '6px',
+                  borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border-medium)',
                   backgroundColor: 'var(--bg-input)',
                   color: 'var(--text-primary)',
@@ -113,7 +134,7 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
                 style={{
                   width: '100%',
                   padding: '0.65rem 0.85rem',
-                  borderRadius: '6px',
+                  borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border-medium)',
                   backgroundColor: 'var(--bg-input)',
                   color: 'var(--text-primary)',
@@ -135,7 +156,7 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
               style={{
                 width: '100%',
                 padding: '0.65rem 0.85rem',
-                borderRadius: '6px',
+                borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border-medium)',
                 backgroundColor: 'var(--bg-input)',
                 color: 'var(--text-primary)',
@@ -150,35 +171,16 @@ export default function DecisionModeModal({ isOpen, onClose, onDecisionResult })
             <button
               type="button"
               onClick={onClose}
-              style={{
-                background: 'transparent',
-                border: '1px solid var(--border-medium)',
-                padding: '0.65rem 1.25rem',
-                borderRadius: '6px',
-                color: 'var(--text-secondary)',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
+              className="btn btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              style={{
-                backgroundColor: 'var(--accent-primary, #9A5B2E)',
-                border: 'none',
-                padding: '0.65rem 1.5rem',
-                borderRadius: '6px',
-                color: '#FFFFFF',
-                fontWeight: 600,
-                cursor: loading ? 'wait' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
+              className="btn btn-primary"
             >
-              <FileText size={16} />
+              <FileText size={15} />
               <span>{loading ? 'Evaluating Trade-offs...' : 'Generate Decision Memo'}</span>
             </button>
           </div>
