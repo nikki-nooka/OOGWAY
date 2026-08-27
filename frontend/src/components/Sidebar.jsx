@@ -30,17 +30,27 @@ export default function Sidebar({
 
   return (
     <aside className={`sidebar ${isOpen ? '' : 'collapsed'}`}>
-      {/* Brand Header */}
+      {/* Sidebar Header */}
       <div className="sidebar-header">
-        <div className="brand-title">
-          <div className="brand-icon">
-            <Sparkles size={15} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '26px',
+            height: '26px',
+            borderRadius: 'var(--radius-xs)',
+            backgroundColor: 'var(--text-primary)',
+            color: 'var(--bg-app)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            fontFamily: 'var(--text-serif-display)',
+            fontWeight: 700
+          }}>
+            L
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '13.5px', letterSpacing: '-0.02em', color: '#fff' }}>Lenny Assistant</div>
-            <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 500 }}>
-              Growth Intelligence
-            </div>
+            <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.2 }}>Discussions</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{sessions.length} recorded</div>
           </div>
         </div>
       </div>

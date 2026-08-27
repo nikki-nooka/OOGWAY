@@ -325,15 +325,23 @@ export default function ExploreMagazine({
           {activeTopicDetail && (
             <div className="modal-overlay" onClick={() => setActiveTopicDetail(null)} role="dialog" aria-modal="true">
               <div className="modal-content-card" style={{ maxWidth: '800px', maxHeight: '85vh', padding: '2rem' }} onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close-btn" onClick={() => setActiveTopicDetail(null)} aria-label="Close topic detail">
-                  <X size={18} />
-                </button>
+                {/* Clean Top Header Row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <span className="tag-category tag-brown">
+                    {activeTopicDetail.category}
+                  </span>
+                  <button 
+                    onClick={() => setActiveTopicDetail(null)} 
+                    className="btn btn-ghost" 
+                    style={{ padding: '6px', color: 'var(--text-muted)', borderRadius: 'var(--radius-sm)' }}
+                    aria-label="Close topic detail"
+                    title="Close (Esc)"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
 
-                <span className="tag-category tag-brown" style={{ marginBottom: '0.5rem' }}>
-                  {activeTopicDetail.category}
-                </span>
-
-                <h2 className="font-display" style={{ fontSize: '1.8rem', color: 'var(--text-primary)', margin: '0.35rem 0 0.65rem 0' }}>
+                <h2 className="font-display" style={{ fontSize: '1.8rem', color: 'var(--text-primary)', margin: '0 0 0.65rem 0' }}>
                   {activeTopicDetail.title}
                 </h2>
 

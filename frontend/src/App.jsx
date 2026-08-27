@@ -16,11 +16,21 @@ import EpisodeDetailModal from './components/EpisodeDetailModal';
 import ContextApplicationModal from './components/ContextApplicationModal';
 import DecisionModeModal from './components/DecisionModeModal';
 
+const getTabFromPath = (pathname) => {
+  const path = (pathname || '').toLowerCase().replace(/\/$/, '');
+  if (!path || path === '' || path === '/home') return 'home';
+  if (path === '/explore') return 'explore';
+  if (path === '/chat' || path === '/ask') return 'chat';
+  if (path === '/writing' || path === '/studio') return 'writing';
+  if (path === '/artifacts' || path === '/library') return 'artifacts';
+  if (path === '/slides' || path === '/deck') return 'slides';
+  if (path === '/sources' || path === '/transcripts' || path === '/kb') return 'sources';
+  return 'home';
+};
 
 export default function App() {
-  // Navigation & View State
-  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'explore' | 'chat' | 'writing' | 'artifacts' | 'slides' | 'sources'
-
+  // Navigation & View State (with direct browser URL sync)
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(window.location.pathname));
   
   // Data State
   const [sessions, setSessions] = useState([]);
@@ -50,7 +60,6 @@ export default function App() {
   const [writingInitialTopic, setWritingInitialTopic] = useState('');
   const [exploreSelectedTopic, setExploreSelectedTopic] = useState(null);
 
-
   // Initialize theme on html element
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -60,7 +69,27 @@ export default function App() {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  // Initial load
+  // Browser Navigation & History routing listener
+  useEffect(() => {
+    const handlePopState = () => {
+      const tab = getTabFromPath(window.location.pathname);
+      if (tab === 'sources') {
+        setIsKnowledgeBaseOpen(true);
+      } else {
+        setActiveTab(tab);
+      }
+    };
+
+    // If loaded on /sources, trigger knowledge base modal
+    if (window.location.pathname.includes('/sources')) {
+      setIsKnowledgeBaseOpen(true);
+    }
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Initial data load
   useEffect(() => {
     loadInitialData();
   }, []);
@@ -83,6 +112,37 @@ export default function App() {
       }
     } catch (err) {
       console.error("Initial load error:", err);
+    }
+  };
+
+  // Route Navigator that synchronizes browser URL (e.g. localhost:3000/artifacts)
+  const navigateToTab = (tabKey, replace = false) => {
+    if (tabKey === 'chat_new') {
+      handleNewSession();
+      const path = '/chat';
+      if (window.location.pathname !== path) {
+        window.history.pushState({ tab: 'chat' }, '', path);
+      }
+      return;
+    }
+
+    if (tabKey === 'sources') {
+      setIsKnowledgeBaseOpen(true);
+      const path = '/sources';
+      if (window.location.pathname !== path) {
+        window.history.pushState({ tab: 'sources' }, '', path);
+      }
+      return;
+    }
+
+    setActiveTab(tabKey);
+    const targetPath = tabKey === 'home' ? '/' : `/${tabKey}`;
+    if (window.location.pathname !== targetPath) {
+      if (replace) {
+        window.history.replaceState({ tab: tabKey }, '', targetPath);
+      } else {
+        window.history.pushState({ tab: tabKey }, '', targetPath);
+      }
     }
   };
 
@@ -109,7 +169,7 @@ export default function App() {
       setCurrentSession(newSession);
       setMessages([]);
       setActiveArtifact(null);
-      setActiveTab('chat');
+      navigateToTab('chat');
     } catch (err) {
       console.error("Error creating session:", err);
     }
@@ -148,78 +208,85 @@ export default function App() {
     }
   };
 
-  const handleSelectModel = async (providerId) => {
-    setActiveModel(providerId);
+  const handleSelectModel = async (modelId) => {
     try {
-      await api.setActiveModel(providerId);
-      const updated = await api.getModels().catch(() => null);
-      if (updated) setModelsData(updated);
+      await api.setModel(modelId);
+      setActiveModel(modelId);
+      const modelsRes = await api.getModels();
+      setModelsData(modelsRes);
     } catch (err) {
-      console.error("Error updating model:", err);
+      console.error("Error switching model:", err);
     }
   };
 
   const handleSendMessage = async (text) => {
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return;
 
-    // Optimistic user message update
-    const tempUserMsg = {
+    let targetSessionId = activeSessionId;
+
+    if (!targetSessionId) {
+      try {
+        const newSession = await api.createSession({
+          title: text.slice(0, 32) + (text.length > 32 ? '...' : ''),
+          model_provider: activeModel
+        });
+        setSessions(prev => [newSession, ...prev]);
+        setActiveSessionId(newSession.id);
+        setCurrentSession(newSession);
+        targetSessionId = newSession.id;
+      } catch (err) {
+        console.error("Failed to create session on message send:", err);
+        return;
+      }
+    }
+
+    const optimisticUserMsg = {
       id: `temp-${Date.now()}`,
       role: 'user',
       content: text,
       created_at: new Date().toISOString()
     };
-    setMessages(prev => [...prev, tempUserMsg]);
+    setMessages(prev => [...prev, optimisticUserMsg]);
     setLoading(true);
 
     try {
-      const response = await api.sendMessage({
-        message: text,
-        session_id: activeSessionId,
-        model: activeModel
+      const response = await api.sendMessage(targetSessionId, {
+        content: text,
+        model_provider: activeModel
       });
 
-      // Update session ID if newly created
-      if (!activeSessionId) {
-        setActiveSessionId(response.session_id);
-        setSessions(prev => [{
-          id: response.session_id,
-          title: text.slice(0, 30),
-          model_provider: response.model_used,
-          message_count: 2,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, ...prev]);
-      }
-
-      // Add assistant response
       const assistantMsg = {
-        id: response.message_id,
+        id: response.message_id || `asst-${Date.now()}`,
         role: 'assistant',
         content: response.content,
         citations: response.citations || [],
         artifacts: response.artifacts || [],
-        model_used: response.model_used,
+        model_used: response.model_used || activeModel,
         latency_ms: response.latency_ms,
         created_at: new Date().toISOString()
       };
+
       setMessages(prev => [...prev, assistantMsg]);
 
-      // If an artifact was generated, automatically open in split-view
+      // Auto-open generated artifact if present
       if (response.artifacts && response.artifacts.length > 0) {
         setActiveArtifact(response.artifacts[0]);
       }
 
-      // Refresh sessions list in background to update titles and counts
-      api.getSessions().then(setSessions).catch(() => {});
+      // Update session list title
+      setSessions(prev => prev.map(s => {
+        if (s.id === targetSessionId && s.title === 'New Discussion') {
+          return { ...s, title: text.slice(0, 32) + (text.length > 32 ? '...' : '') };
+        }
+        return s;
+      }));
 
     } catch (err) {
       console.error("Chat error:", err);
       setMessages(prev => [...prev, {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        content: `**Error processing request:** ${err.message}`,
-        model_used: 'error',
+        content: `⚠️ Communication error: Could not reach the grounding backend. Please verify your connection or model settings.`,
         created_at: new Date().toISOString()
       }]);
     } finally {
@@ -227,26 +294,26 @@ export default function App() {
     }
   };
 
-  // Cross-Tab Navigation & Action Helpers
-  const handleStartChatWithPrompt = (promptText) => {
-    setActiveTab('chat');
-    handleSendMessage(promptText);
-  };
-
-  const handleOpenWritingWithTopic = (topicName) => {
-    setWritingInitialTopic(topicName);
-    setActiveTab('writing');
+  // Cross-feature routing handlers
+  const handleStartChatWithPrompt = (prompt) => {
+    navigateToTab('chat');
+    handleSendMessage(prompt);
   };
 
   const handleExploreTopic = (topicId) => {
     setExploreSelectedTopic(topicId);
-    setActiveTab('explore');
+    navigateToTab('explore');
   };
 
-  const handleActionTrigger = async (actionType, messageText) => {
-    // Extract topic from message
-    const cleanTopic = messageText.slice(0, 80).replace(/[#*`]/g, '').trim();
+  const handleOpenWritingWithTopic = (topicTitle) => {
+    setWritingInitialTopic(topicTitle);
+    navigateToTab('writing');
+  };
 
+  // Action Bar handler
+  const handleActionTrigger = (actionType, contextText) => {
+    const cleanTopic = contextText.replace(/^#+\s+/gm, '').replace(/[*_`]/g, '').slice(0, 140);
+    
     if (actionType === 'challenge') {
       handleSendMessage(`⚡ Challenge this advice: What are the failure modes, counterpoints, and alternative guest models for: "${cleanTopic}"?`);
     } else if (actionType === 'apply-context') {
@@ -264,7 +331,6 @@ export default function App() {
   };
 
   const handleApplyContextResult = (result) => {
-    // Post synthesized playbook into active chat session
     const synthesizedContent = `### 🎯 Tailored Playbook for Your Context\n\n**Situation:** ${result.situation_summary}\n\n#### 🔑 Core Principles:\n${result.core_principles.map(p => `- ${p}`).join('\n')}\n\n#### 📋 Recommended Step-by-Step Actions:\n${result.recommended_actions.map(a => `1. **${a.phase}: ${a.action}**\n   - *Rationale:* ${a.rationale}\n   - *Evidence:* Grounded in principles from **${a.evidence_ref}**`).join('\n\n')}\n\n#### ⚠️ Pre-Mortem Guardrails:\n${result.key_risks.map(r => `- ${r}`).join('\n')}`;
     
     setMessages(prev => [...prev, {
@@ -278,7 +344,6 @@ export default function App() {
   };
 
   const handleDecisionResult = (result) => {
-    // Open generated decision memo in artifact split viewer
     const newArt = {
       id: result.artifact_id || `memo-${Date.now()}`,
       title: result.title,
@@ -286,26 +351,15 @@ export default function App() {
       content: result.artifact_content
     };
     setActiveArtifact(newArt);
-    setActiveTab('chat');
+    navigateToTab('chat');
   };
-
-  const handleTabSelect = (tabKey) => {
-    if (tabKey === 'chat_new') {
-      handleNewSession();
-    } else if (tabKey === 'sources') {
-      setIsKnowledgeBaseOpen(true);
-    } else {
-      setActiveTab(tabKey);
-    }
-  };
-
 
   return (
     <div className="app-viewport">
       {/* Top Editorial Navbar */}
       <Navbar 
         activeTab={activeTab}
-        onSelectTab={handleTabSelect}
+        onSelectTab={navigateToTab}
         activeModel={activeModel}
         modelsData={modelsData}
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -321,7 +375,7 @@ export default function App() {
           <HomePage 
             onStartChat={handleStartChatWithPrompt}
             onExploreTopic={handleExploreTopic}
-            onOpenWritingStudio={() => setActiveTab('writing')}
+            onOpenWritingStudio={() => navigateToTab('writing')}
             onOpenEpisode={(epId) => setActiveEpisodeId(epId)}
           />
         )}
@@ -382,7 +436,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Screen 11 & 12: Writing Studio (Ship 30 for 30) */}
+        {/* Screen 10: Ship 30 Writing Studio */}
         {activeTab === 'writing' && (
           <WritingStudio 
             initialTopic={writingInitialTopic}
@@ -390,58 +444,24 @@ export default function App() {
           />
         )}
 
-        {/* Screen 15: Artifact Library */}
+        {/* Screen 11: Artifact Library */}
         {activeTab === 'artifacts' && (
           <ArtifactLibrary 
             onSelectArtifact={(art) => {
               setActiveArtifact(art);
-              setActiveTab('chat');
+              navigateToTab('chat');
             }}
-            onOpenWritingStudio={() => setActiveTab('writing')}
+            onOpenWritingStudio={() => navigateToTab('writing')}
           />
         )}
 
-        {/* Screen 16 / Section 50: Interactive Presentation Slide Deck */}
+        {/* Screen 12: Presentation Deck Mode */}
         {activeTab === 'slides' && (
           <PresentationDeck />
         )}
       </main>
 
-      {/* Slide-over Source Drawer (Screen 05) */}
-      <SourceDrawer 
-        citation={activeCitation}
-        onClose={() => setActiveCitation(null)}
-      />
-
-      {/* Knowledge Base Modal */}
-      <KnowledgeBaseModal 
-        isOpen={isKnowledgeBaseOpen}
-        onClose={() => setIsKnowledgeBaseOpen(false)}
-      />
-
-      {/* Context Application Modal */}
-      <ContextApplicationModal 
-        isOpen={isContextModalOpen}
-        onClose={() => setIsContextModalOpen(false)}
-        topic={contextActionTopic}
-        onApplyContextResult={handleApplyContextResult}
-      />
-
-      {/* Decision Mode Modal */}
-      <DecisionModeModal 
-        isOpen={isDecisionModalOpen}
-        onClose={() => setIsDecisionModalOpen(false)}
-        onDecisionResult={handleDecisionResult}
-      />
-
-      {/* Episode Detail Modal (Screen 04 & 05) */}
-      <EpisodeDetailModal 
-        episodeId={activeEpisodeId}
-        onClose={() => setActiveEpisodeId(null)}
-        onStartChat={handleStartChatWithPrompt}
-      />
-
-      {/* System Settings & Model Status Modal (Screen 16 & 17) */}
+      {/* Global Modals & Drawers */}
       <SettingsModal 
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -453,7 +473,44 @@ export default function App() {
         onToggleTheme={toggleTheme}
         onClearAllSessions={handleClearAllSessions}
       />
+
+      <KnowledgeBaseModal 
+        isOpen={isKnowledgeBaseOpen}
+        onClose={() => {
+          setIsKnowledgeBaseOpen(false);
+          // If URL was /sources, return path to current active tab
+          if (window.location.pathname.includes('/sources')) {
+            const targetPath = activeTab === 'home' ? '/' : `/${activeTab}`;
+            window.history.replaceState({ tab: activeTab }, '', targetPath);
+          }
+        }}
+        onSelectEpisode={(epId) => setActiveEpisodeId(epId)}
+        onStartChat={handleStartChatWithPrompt}
+      />
+
+      <EpisodeDetailModal 
+        episodeId={activeEpisodeId}
+        onClose={() => setActiveEpisodeId(null)}
+        onStartChat={handleStartChatWithPrompt}
+      />
+
+      <SourceDrawer 
+        citation={activeCitation}
+        onClose={() => setActiveCitation(null)}
+      />
+
+      <ContextApplicationModal
+        isOpen={isContextModalOpen}
+        onClose={() => setIsContextModalOpen(false)}
+        topic={contextActionTopic}
+        onApplyContextResult={handleApplyContextResult}
+      />
+
+      <DecisionModeModal
+        isOpen={isDecisionModalOpen}
+        onClose={() => setIsDecisionModalOpen(false)}
+        onDecisionResult={handleDecisionResult}
+      />
     </div>
   );
 }
-
