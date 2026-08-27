@@ -5,11 +5,16 @@ import pytest
 import httpx
 from pathlib import Path
 
-BASE_URL = "http://127.0.0.1:8000"
+import asyncio
+from fastapi.testclient import TestClient
+from app.main import app
+from app.db.database import init_db
 
 @pytest.fixture(scope="module")
 def client():
-    return httpx.Client(base_url=BASE_URL, timeout=35.0)
+    asyncio.run(init_db())
+    with TestClient(app) as c:
+        yield c
 
 # ============================================================================
 # CATEGORY 1: HEALTH, SYSTEM DIAGNOSTICS & INGESTION TRACEABILITY

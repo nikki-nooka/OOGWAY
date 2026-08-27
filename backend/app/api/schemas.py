@@ -65,6 +65,41 @@ class SessionDetail(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+class WritingRequest(BaseModel):
+    topic: str = Field(..., min_length=2, description="Essay topic or growth framework")
+    target_words: Optional[int] = Field(1250, description="Target word count (~1,250)")
+    style: Optional[str] = Field("ship30", description="Writing style ('ship30', 'memo', 'brief', 'summary')")
+    guest_focus: Optional[str] = Field(None, description="Optional guest name to focus on")
+    session_id: Optional[str] = Field(None, description="Optional session UUID")
+    model: Optional[str] = Field(None, description="Model override")
+
+class WritingResponse(BaseModel):
+    title: str
+    content: str
+    hook: str
+    word_count: int
+    citations: List[Dict[str, Any]] = []
+    artifact: Optional[Dict[str, Any]] = None
+    model_used: str
+    latency_ms: int
+
+class ArtifactCreateRequest(BaseModel):
+    title: str = Field(..., min_length=1)
+    artifact_type: str = Field("markdown", description="'html', 'markdown', or 'css'")
+    content: str = Field(..., min_length=1)
+    session_id: Optional[str] = None
+    meta: Optional[Dict[str, Any]] = {}
+
+class TopicSummary(BaseModel):
+    id: str
+    title: str
+    description: str
+    category: str
+    chunk_count: int
+    top_guests: List[str]
+    frameworks: List[str]
+    sample_questions: List[str]
+
 class ModelSwitchRequest(BaseModel):
     provider: str = Field(..., description="'ollama', 'claude', 'openai', or 'mock'")
 
@@ -74,3 +109,4 @@ class HealthStatus(BaseModel):
     transcripts_count: int
     episodes_count: int
     active_model: str
+

@@ -1,27 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { api } from './services/api';
+import Navbar from './components/Navbar';
+import HomePage from './components/HomePage';
+import ExploreMagazine from './components/ExploreMagazine';
+import WritingStudio from './components/WritingStudio';
+import ArtifactLibrary from './components/ArtifactLibrary';
+import PresentationDeck from './components/PresentationDeck';
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import ArtifactViewer from './components/ArtifactViewer';
 import SourceDrawer from './components/SourceDrawer';
+import SettingsModal from './components/SettingsModal';
 import KnowledgeBaseModal from './components/KnowledgeBaseModal';
+import EpisodeDetailModal from './components/EpisodeDetailModal';
 
 export default function App() {
+  // Navigation & View State
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'explore' | 'chat' | 'writing' | 'artifacts' | 'slides' | 'sources'
+  
+  // Data State
   const [sessions, setSessions] = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [currentSession, setCurrentSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Model & System State
   const [modelsData, setModelsData] = useState(null);
   const [activeModel, setActiveModel] = useState('ollama');
   const [health, setHealth] = useState(null);
+  const [theme, setTheme] = useState('light'); // Default to Warm Editorial Light
+  
+  // Modals & Panels
   const [activeArtifact, setActiveArtifact] = useState(null);
   const [activeCitation, setActiveCitation] = useState(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(false);
-  const [theme, setTheme] = useState('dark');
+  const [activeEpisodeId, setActiveEpisodeId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Context pass-through for Writing Studio & Explore
+  const [writingInitialTopic, setWritingInitialTopic] = useState('');
+  const [exploreSelectedTopic, setExploreSelectedTopic] = useState(null);
 
-  // Initialize theme
+  // Initialize theme on html element
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
@@ -79,6 +101,7 @@ export default function App() {
       setCurrentSession(newSession);
       setMessages([]);
       setActiveArtifact(null);
+      setActiveTab('chat');
     } catch (err) {
       console.error("Error creating session:", err);
     }
@@ -121,6 +144,8 @@ export default function App() {
     setActiveModel(providerId);
     try {
       await api.setActiveModel(providerId);
+      const updated = await api.getModels().catch(() => null);
+      if (updated) setModelsData(updated);
     } catch (err) {
       console.error("Error updating model:", err);
     }
@@ -194,50 +219,139 @@ export default function App() {
     }
   };
 
-  return (
-    <div className="app-container">
-      {/* Left Sidebar */}
-      <Sidebar 
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        onSelectSession={selectSession}
-        onNewSession={handleNewSession}
-        onDeleteSession={handleDeleteSession}
-        onClearAllSessions={handleClearAllSessions}
-        onOpenKnowledgeBase={() => setIsKnowledgeBaseOpen(true)}
-        health={health}
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+  // Cross-Tab Navigation Helpers
+  const handleStartChatWithPrompt = (promptText) => {
+    setActiveTab('chat');
+    handleSendMessage(promptText);
+  };
 
-      {/* Center Chat Viewport */}
-      <ChatArea 
-        session={currentSession}
-        messages={messages}
-        loading={loading}
-        modelsData={modelsData}
+  const handleOpenWritingWithTopic = (topicName) => {
+    setWritingInitialTopic(topicName);
+    setActiveTab('writing');
+  };
+
+  const handleExploreTopic = (topicId) => {
+    setExploreSelectedTopic(topicId);
+    setActiveTab('explore');
+  };
+
+  const handleTabSelect = (tabKey) => {
+    if (tabKey === 'chat_new') {
+      handleNewSession();
+    } else if (tabKey === 'sources') {
+      setIsKnowledgeBaseOpen(true);
+    } else {
+      setActiveTab(tabKey);
+    }
+  };
+
+  return (
+    <div className="app-viewport">
+      {/* Top Editorial Navbar */}
+      <Navbar 
+        activeTab={activeTab}
+        onSelectTab={handleTabSelect}
         activeModel={activeModel}
-        onSelectModel={handleSelectModel}
-        onSendMessage={handleSendMessage}
-        onOpenCitation={(cit) => setActiveCitation(cit)}
-        onOpenArtifact={(art) => setActiveArtifact(art)}
-        onOpenKnowledgeBase={() => setIsKnowledgeBaseOpen(true)}
-        activeArtifact={activeArtifact}
+        modelsData={modelsData}
+        onOpenSettings={() => setIsSettingsOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
-        isSidebarOpen={isSidebarOpen}
-        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+        onOpenSearch={() => setIsKnowledgeBaseOpen(true)}
       />
 
-      {/* Right Side-by-Side Claude-Style Artifact Viewer */}
-      {activeArtifact && (
-        <ArtifactViewer 
-          artifact={activeArtifact}
-          onClose={() => setActiveArtifact(null)}
-        />
-      )}
+      {/* Main Content Area Routing */}
+      <main className="app-main-content">
+        {/* Screen 01: Home Page */}
+        {activeTab === 'home' && (
+          <HomePage 
+            onStartChat={handleStartChatWithPrompt}
+            onExploreTopic={handleExploreTopic}
+            onOpenWritingStudio={() => setActiveTab('writing')}
+            onOpenEpisode={(epId) => setActiveEpisodeId(epId)}
+          />
+        )}
 
-      {/* Slide-over Source Drawer */}
+        {/* Screen 02 & 03: Explore Magazine */}
+        {activeTab === 'explore' && (
+          <ExploreMagazine 
+            onStartChat={handleStartChatWithPrompt}
+            onOpenWritingTopic={handleOpenWritingWithTopic}
+            selectedTopicId={exploreSelectedTopic}
+          />
+        )}
+
+        {/* Screen 06 - 10: Conversational Research Workspace */}
+        {activeTab === 'chat' && (
+          <div className="chat-workspace-wrapper">
+            {/* Left Sidebar */}
+            <Sidebar 
+              sessions={sessions}
+              activeSessionId={activeSessionId}
+              onSelectSession={selectSession}
+              onNewSession={handleNewSession}
+              onDeleteSession={handleDeleteSession}
+              onClearAllSessions={handleClearAllSessions}
+              onOpenKnowledgeBase={() => setIsKnowledgeBaseOpen(true)}
+              health={health}
+              isOpen={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+            />
+
+            {/* Center Chat Viewport */}
+            <ChatArea 
+              session={currentSession}
+              messages={messages}
+              loading={loading}
+              modelsData={modelsData}
+              activeModel={activeModel}
+              onSelectModel={handleSelectModel}
+              onSendMessage={handleSendMessage}
+              onOpenCitation={(cit) => setActiveCitation(cit)}
+              onOpenArtifact={(art) => setActiveArtifact(art)}
+              onOpenKnowledgeBase={() => setIsKnowledgeBaseOpen(true)}
+              activeArtifact={activeArtifact}
+              theme={theme}
+              onToggleTheme={toggleTheme}
+              isSidebarOpen={isSidebarOpen}
+              onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+            />
+
+            {/* Right Side-by-Side Claude-Style Artifact Viewer (Screen 13 & 14) */}
+            {activeArtifact && (
+              <ArtifactViewer 
+                artifact={activeArtifact}
+                onClose={() => setActiveArtifact(null)}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Screen 11 & 12: Writing Studio (Ship 30 for 30) */}
+        {activeTab === 'writing' && (
+          <WritingStudio 
+            initialTopic={writingInitialTopic}
+            onSaveArtifact={() => {}}
+          />
+        )}
+
+        {/* Screen 15: Artifact Library */}
+        {activeTab === 'artifacts' && (
+          <ArtifactLibrary 
+            onSelectArtifact={(art) => {
+              setActiveArtifact(art);
+              setActiveTab('chat');
+            }}
+            onOpenWritingStudio={() => setActiveTab('writing')}
+          />
+        )}
+
+        {/* Screen 16 / Section 50: Interactive Presentation Slide Deck */}
+        {activeTab === 'slides' && (
+          <PresentationDeck />
+        )}
+      </main>
+
+      {/* Slide-over Source Drawer (Screen 05) */}
       <SourceDrawer 
         citation={activeCitation}
         onClose={() => setActiveCitation(null)}
@@ -247,6 +361,26 @@ export default function App() {
       <KnowledgeBaseModal 
         isOpen={isKnowledgeBaseOpen}
         onClose={() => setIsKnowledgeBaseOpen(false)}
+      />
+
+      {/* Episode Detail Modal (Screen 04 & 05) */}
+      <EpisodeDetailModal 
+        episodeId={activeEpisodeId}
+        onClose={() => setActiveEpisodeId(null)}
+        onStartChat={handleStartChatWithPrompt}
+      />
+
+      {/* System Settings & Model Status Modal (Screen 16 & 17) */}
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        activeModel={activeModel}
+        onSelectModel={handleSelectModel}
+        modelsData={modelsData}
+        health={health}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onClearAllSessions={handleClearAllSessions}
       />
     </div>
   );

@@ -4,6 +4,7 @@ import App from './App.jsx';
 import './styles/index.css';
 import './styles/chat.css';
 import './styles/artifact.css';
+import './styles/magazine.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

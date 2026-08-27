@@ -13,7 +13,8 @@ import {
   Minimize2, 
   X, 
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Lock
 } from 'lucide-react';
 
 export default function ArtifactViewer({ 
@@ -28,8 +29,8 @@ export default function ArtifactViewer({
     if (artifact) {
       // Trigger subtle confetti burst
       confetti({
-        particleCount: 40,
-        spread: 60,
+        particleCount: 35,
+        spread: 55,
         origin: { y: 0.7 }
       });
       // Default tab based on type
@@ -56,7 +57,9 @@ export default function ArtifactViewer({
     const a = document.createElement('a');
     a.href = url;
     a.download = `${(artifact.title || 'artifact').toLowerCase().replace(/\s+/g, '_')}.${ext}`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
@@ -75,25 +78,11 @@ export default function ArtifactViewer({
       {/* Header */}
       <div className="artifact-header">
         <div className="artifact-title-box">
-          <div style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '6px',
-            background: 'var(--accent-gradient)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            flexShrink: 0
-          }}>
-            <Sparkles size={14} />
+          <div className="brand-badge" style={{ width: '26px', height: '26px', fontSize: '13px' }}>
+            <Sparkles size={13} />
           </div>
           <div>
             <div className="artifact-title">{artifact.title || "Interactive Artifact"}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
-              <ShieldCheck size={12} color="#10b981" />
-              <span>Isolated Sandbox Active</span>
-            </div>
           </div>
         </div>
 
@@ -104,7 +93,7 @@ export default function ArtifactViewer({
               className={`artifact-tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
               onClick={() => setActiveTab('preview')}
             >
-              <Eye size={13} />
+              <Eye size={12} />
               <span>Preview</span>
             </button>
           )}
@@ -112,7 +101,7 @@ export default function ArtifactViewer({
             className={`artifact-tab-btn ${activeTab === 'code' ? 'active' : ''}`}
             onClick={() => setActiveTab('code')}
           >
-            <Code2 size={13} />
+            <Code2 size={12} />
             <span>Code</span>
           </button>
           {artifact.artifact_type === 'markdown' && (
@@ -120,7 +109,7 @@ export default function ArtifactViewer({
               className={`artifact-tab-btn ${activeTab === 'markdown' ? 'active' : ''}`}
               onClick={() => setActiveTab('markdown')}
             >
-              <FileText size={13} />
+              <FileText size={12} />
               <span>Doc View</span>
             </button>
           )}
@@ -131,41 +120,54 @@ export default function ArtifactViewer({
           <button 
             onClick={handleCopyCode} 
             className="btn btn-secondary" 
-            style={{ padding: '5px 10px', fontSize: '12px' }}
-            title="Copy source code"
+            style={{ padding: '4px 8px', fontSize: '11.5px' }}
+            title="Copy code"
           >
-            {copied ? <Check size={13} color="#10b981" /> : <Copy size={13} />}
+            {copied ? <Check size={12} color="var(--status-success)" /> : <Copy size={12} />}
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
 
           <button 
             onClick={handleDownload} 
             className="btn btn-secondary" 
-            style={{ padding: '5px 10px', fontSize: '12px' }}
+            style={{ padding: '4px 8px', fontSize: '11.5px' }}
             title="Download file"
           >
-            <Download size={13} />
+            <Download size={12} />
           </button>
 
           <button 
             onClick={() => setIsFullscreen(!isFullscreen)} 
             className="btn btn-ghost" 
-            style={{ padding: '5px 8px' }}
+            style={{ padding: '4px 6px' }}
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen View"}
           >
-            {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
           </button>
 
           <button 
             onClick={onClose} 
             className="btn btn-ghost" 
-            style={{ padding: '5px 8px' }}
+            style={{ padding: '4px 6px' }}
             title="Close Artifact Pane"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
       </div>
+
+      {/* Safe Preview Security Banner (Screen 14 requirement) */}
+      {isHtml && (
+        <div className="safe-preview-banner">
+          <div className="safe-status-pill">
+            <Lock size={12} />
+            <span>Safe Sandbox Active</span>
+          </div>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            Scripts restricted • Isolated origin • Sandbox enabled
+          </span>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="artifact-content-container">

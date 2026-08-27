@@ -68,6 +68,78 @@ export const api = {
     return res.json();
   },
 
+  // --- Writing Studio (Ship 30 for 30) ---
+  async generateShip30Essay({ topic, target_words = 1250, style = "ship30", guest_focus = null, session_id = null, model = null }) {
+    const res = await fetch(`${API_BASE}/writing/ship30`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, target_words, style, guest_focus, session_id, model }),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Failed to generate Ship 30 essay');
+    }
+    return res.json();
+  },
+
+  // --- Topics ---
+  async getTopics() {
+    const res = await fetch(`${API_BASE}/topics`);
+    if (!res.ok) throw new Error('Failed to fetch topics');
+    return res.json();
+  },
+
+  async getTopicDetail(topicId) {
+    const res = await fetch(`${API_BASE}/topics/${topicId}`);
+    if (!res.ok) throw new Error('Failed to fetch topic details');
+    return res.json();
+  },
+
+  // --- Artifacts ---
+  async getArtifacts() {
+    const res = await fetch(`${API_BASE}/artifacts`);
+    if (!res.ok) throw new Error('Failed to fetch artifacts');
+    return res.json();
+  },
+
+  async getArtifact(artifactId) {
+    const res = await fetch(`${API_BASE}/artifacts/${artifactId}`);
+    if (!res.ok) throw new Error('Failed to fetch artifact');
+    return res.json();
+  },
+
+  async createArtifact({ title, artifact_type = "markdown", content, session_id = null, meta = {} }) {
+    const res = await fetch(`${API_BASE}/artifacts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, artifact_type, content, session_id, meta }),
+    });
+    if (!res.ok) throw new Error('Failed to create artifact');
+    return res.json();
+  },
+
+  async deleteArtifact(artifactId) {
+    const res = await fetch(`${API_BASE}/artifacts/${artifactId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete artifact');
+    return res.json();
+  },
+
+  // --- Sources & Transcripts ---
+  async getSources(query = '') {
+    const url = query ? `${API_BASE}/sources?query=${encodeURIComponent(query)}` : `${API_BASE}/sources`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch sources');
+    return res.json();
+  },
+
+  async getSourceDetail(episodeId) {
+    const res = await fetch(`${API_BASE}/sources/${episodeId}`);
+    if (!res.ok) throw new Error('Failed to fetch source details');
+    return res.json();
+  },
+
   async getTranscripts(query = '') {
     const url = query ? `${API_BASE}/transcripts?query=${encodeURIComponent(query)}` : `${API_BASE}/transcripts`;
     const res = await fetch(url);
