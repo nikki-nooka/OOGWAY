@@ -3,6 +3,7 @@
 **Role:** Forward Deployed Engineer Take-Home Assessment  
 **Target Length:** 2 minutes 45 seconds  
 **Format:** Screen Recording with Camera Enabled (Face in corner / Picture-in-Picture)  
+**Live YouTube Video:** [https://www.youtube.com/watch?v=K3OxMGg3kC8](https://www.youtube.com/watch?v=K3OxMGg3kC8)  
 **Tools Recommended:** Loom, OBS Studio, or Clipchamp  
 
 ---

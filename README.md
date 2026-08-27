@@ -4,6 +4,7 @@
 > *Full-stack conversational assistant, Ship 30 writing studio, and interactive artifact viewer built with FastAPI, React 18, and PostgreSQL/SQLite.*
 
 [![Public GitHub](https://img.shields.io/badge/GitHub-OOGWAY-181717?style=for-the-badge&logo=github)](https://github.com/nikki-nooka/OOGWAY)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube%20Walkthrough-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=K3OxMGg3kC8)
 [![Automated Tests](https://img.shields.io/badge/pytest-26%2F26%20Passed%20(100%25)-22c55e?style=for-the-badge&logo=pytest)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend/tests)
 [![Model Providers](https://img.shields.io/badge/Models-Ollama%20%7C%20Claude%20%7C%20OpenAI%20%7C%20Offline-6366f1?style=for-the-badge&logo=anthropic)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend/app/engine/llm_provider.py)
 [![Backend](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend)
@@ -15,6 +16,22 @@
 ## 📌 Project Overview
 
 **The Lenny Growth Assistant** ingests the complete corpus of *Lenny's Podcast* (279 episodes, 4,389 transcript chunks) and provides an end-to-end editorial workspace for product managers and growth leaders. It delivers strictly grounded answers with exact audio timestamps, synthesizes ~1,250-word Ship 30 atomic essays, and renders live, sandboxed HTML/CSS artifacts beside the chat stream.
+
+---
+
+## 🎥 Demo Video Walkthrough
+
+[![The Lenny Growth Assistant Demo Video](https://img.youtube.com/vi/K3OxMGg3kC8/maxresdefault.jpg)](https://www.youtube.com/watch?v=K3OxMGg3kC8)
+
+> 📺 **Watch Full Walkthrough on YouTube:** [https://www.youtube.com/watch?v=K3OxMGg3kC8](https://www.youtube.com/watch?v=K3OxMGg3kC8)
+> 
+> **Walkthrough Highlights:**
+> - **0:00** — Introduction, Problem Framing & Discovery Brief
+> - **0:30** — Grounded Conversational Q&A & Exact Audio Timestamp Citations
+> - **1:15** — Local Ollama (`llama3.2`) Execution & Multi-Model Switcher
+> - **1:45** — Ship 30 for 30 Writing Studio & Sandboxed Claude Split-Pane Artifact Viewer
+> - **2:15** — Architectural Trade-Off (In-Memory BM25 + Entity Boost vs Heavy Vector DBs)
+> - **2:45** — Operational Handoff, Automated Tests & Quickstart Deployment
 
 ---
 
@@ -264,7 +281,7 @@ OOGWAY/
 | **5** | Architecture & Security | [architecture.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/architecture.md) | ✅ Complete |
 | **6** | Agent Transcripts | [agent-transcripts/](file:///c:/Users/Nikshith/Desktop/OOGWAY/agent-transcripts) | ✅ Complete |
 | **7** | Automated & Manual Tests | [TESTING.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/TESTING.md) & [backend/tests/](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend/tests) | ✅ 26/26 Passed |
-| **8** | Demo Video Guide | Documented above | ✅ Ready for Recording |
+| **8** | Demo Video Walkthrough | [YouTube Link](https://www.youtube.com/watch?v=K3OxMGg3kC8) | ✅ Uploaded & Live |
 
 - **Official Form Submission:** `https://forms.gle/LgotDHNVxW1mbzNE7`  
 - **Submission Deadline:** 28/08/26 EOD
