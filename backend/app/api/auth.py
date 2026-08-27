@@ -82,6 +82,12 @@ async def verify_session_ownership(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You do not have permission to view or modify this private session."
             )
+    elif user:
+        # Seamlessly associate unassigned session with the current logged-in user
+        session_obj.user_id = user.id
+        await db.commit()
+        await db.refresh(session_obj)
+
     return session_obj
 
 

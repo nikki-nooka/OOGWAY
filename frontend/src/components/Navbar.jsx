@@ -200,24 +200,24 @@ export default function Navbar({
             {isProfileMenuOpen && (
               <>
                 <div 
-                  style={{ position: 'fixed', inset: 0, zIndex: 100 }} 
+                  style={{ position: 'fixed', inset: 0, zIndex: 99998 }} 
                   onClick={() => setIsProfileMenuOpen(false)} 
                 />
                 <div style={{
                   position: 'absolute',
-                  top: '110%',
+                  top: 'calc(100% + 8px)',
                   right: 0,
-                  width: '230px',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '8px',
-                  boxShadow: 'var(--shadow-lg)',
+                  width: '240px',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-md, 8px)',
+                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.22)',
                   padding: '8px 0',
-                  zIndex: 101,
+                  zIndex: 99999,
                   display: 'flex',
                   flexDirection: 'column'
                 }}>
-                  <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
                     <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-primary)' }}>
                       {currentUser?.name || 'Product Builder'}
                     </div>

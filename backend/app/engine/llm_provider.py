@@ -488,6 +488,10 @@ class LLMFactory:
         return cls._providers.get(key, cls._providers["mock"])
 
     @classmethod
+    def get_active_provider(cls) -> BaseLLMProvider:
+        return cls.get_provider()
+
+    @classmethod
     def set_active_provider(cls, name: str) -> str:
         key = name.lower()
         if key in cls._providers:

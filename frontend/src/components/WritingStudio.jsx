@@ -30,10 +30,12 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
   const [saved, setSaved] = useState(false);
   const [groundingCheck, setGroundingCheck] = useState(null);
   const [verifyingGrounding, setVerifyingGrounding] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setGenerating(true);
+    setError(null);
     setSaved(false);
     setGroundingCheck(null);
 
@@ -51,13 +53,14 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
 
       // Automatically evaluate claims grounding
       try {
-        const verifyRes = await api.verifyEssayGrounding(res.content);
+        const verifyRes = await api.verifyGrounding(res.content);
         setGroundingCheck(verifyRes);
       } catch (e) {
         console.warn('Grounding check failed:', e);
       }
     } catch (err) {
       console.error("Error generating essay:", err);
+      setError(err.message || 'Failed to synthesize essay. Please try again.');
     } finally {
       setGenerating(false);
     }
@@ -202,6 +205,21 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
             )}
           </button>
         </div>
+
+        {error && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px 16px',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '6px',
+            color: 'var(--status-danger)',
+            fontSize: '13px',
+            lineHeight: 1.4
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
       </div>
 
       {/* Generated Result & Editor / Preview Section */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from './services/api';
+import { api, authStorage } from './services/api';
 import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import ExploreMagazine from './components/ExploreMagazine';
@@ -37,7 +37,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(() => getTabFromPath(window.location.pathname));
   
   // User Authentication & Private Workspace State
-  const [currentUser, setCurrentUser] = useState(() => api.authStorage.getUser());
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return authStorage ? authStorage.getUser() : null;
+    } catch {
+      return null;
+    }
+  });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Data State
@@ -105,6 +111,18 @@ export default function App() {
 
   const loadInitialData = async () => {
     try {
+      // Validate current auth token with backend if present
+      if (authStorage && authStorage.getToken()) {
+        try {
+          const verifiedUser = await api.getMe();
+          setCurrentUser(verifiedUser);
+        } catch (e) {
+          console.warn("Auth token invalid or expired. Resetting session:", e);
+          if (authStorage) authStorage.logout();
+          setCurrentUser(null);
+        }
+      }
+
       const [sessionsRes, modelsRes, healthRes] = await Promise.all([
         api.getSessions().catch(() => []),
         api.getModels().catch(() => null),
@@ -299,13 +317,27 @@ export default function App() {
         setActiveArtifact(response.artifacts[0]);
       }
 
-      // Update session list title
-      setSessions(prev => prev.map(s => {
-        if (s.id === targetSessionId && s.title === 'New Discussion') {
-          return { ...s, title: text.slice(0, 32) + (text.length > 32 ? '...' : '') };
+      // Update session list and sync from backend
+      try {
+        const freshSessions = await api.getSessions();
+        if (freshSessions && freshSessions.length > 0) {
+          setSessions(freshSessions);
+        } else {
+          setSessions(prev => prev.map(s => {
+            if (s.id === targetSessionId && s.title === 'New Discussion') {
+              return { ...s, title: text.slice(0, 32) + (text.length > 32 ? '...' : '') };
+            }
+            return s;
+          }));
         }
-        return s;
-      }));
+      } catch {
+        setSessions(prev => prev.map(s => {
+          if (s.id === targetSessionId && s.title === 'New Discussion') {
+            return { ...s, title: text.slice(0, 32) + (text.length > 32 ? '...' : '') };
+          }
+          return s;
+        }));
+      }
 
     } catch (err) {
       console.error("Chat error:", err);
@@ -435,6 +467,8 @@ export default function App() {
               health={health}
               isOpen={isSidebarOpen}
               onClose={() => setIsSidebarOpen(false)}
+              currentUser={currentUser}
+              onOpenAuth={() => setIsAuthModalOpen(true)}
             />
 
             {/* Center Chat Viewport */}

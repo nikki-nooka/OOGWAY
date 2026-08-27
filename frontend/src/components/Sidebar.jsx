@@ -19,7 +19,9 @@ export default function Sidebar({
   onOpenKnowledgeBase,
   health,
   isOpen,
-  onClose
+  onClose,
+  currentUser,
+  onOpenAuth
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -50,7 +52,9 @@ export default function Sidebar({
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.2 }}>Discussions</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{sessions.length} recorded</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+              {currentUser ? `${sessions.length} recorded` : 'Guest Session'}
+            </div>
           </div>
         </div>
       </div>
@@ -173,8 +177,15 @@ export default function Sidebar({
         </div>
         
         {filteredSessions.length === 0 ? (
-          <div style={{ padding: '24px 8px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
-            No conversations yet
+          <div style={{ padding: '28px 12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+              {currentUser ? 'No conversations yet' : 'No saved conversations'}
+            </div>
+            {!currentUser && (
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                Sign in to save and sync your research across devices.
+              </div>
+            )}
           </div>
         ) : (
           filteredSessions.map((s) => (

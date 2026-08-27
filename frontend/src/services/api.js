@@ -33,6 +33,7 @@ const getHeaders = (extraHeaders = {}) => {
 };
 
 export const api = {
+  authStorage,
   // --- Authentication & User Profile ---
   async signup({ name, email, password }) {
     const res = await fetch(`${API_BASE}/auth/signup`, {
@@ -245,6 +246,10 @@ export const api = {
     });
     if (!res.ok) throw new Error('Failed to verify grounding');
     return res.json();
+  },
+
+  async verifyEssayGrounding(essayText) {
+    return this.verifyGrounding(essayText);
   },
 
   // --- Topics ---

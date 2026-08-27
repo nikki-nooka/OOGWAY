@@ -598,20 +598,15 @@ async def list_sessions(
     user: Optional[UserModel] = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if user:
-        stmt = (
-            select(SessionModel)
-            .where(SessionModel.user_id == user.id)
-            .options(selectinload(SessionModel.messages), selectinload(SessionModel.artifacts))
-            .order_by(desc(SessionModel.updated_at))
-        )
-    else:
-        stmt = (
-            select(SessionModel)
-            .where(SessionModel.user_id.is_(None))
-            .options(selectinload(SessionModel.messages), selectinload(SessionModel.artifacts))
-            .order_by(desc(SessionModel.updated_at))
-        )
+    if not user:
+        return []
+    
+    stmt = (
+        select(SessionModel)
+        .where(SessionModel.user_id == user.id)
+        .options(selectinload(SessionModel.messages), selectinload(SessionModel.artifacts))
+        .order_by(desc(SessionModel.updated_at))
+    )
     
     res = await db.execute(stmt)
     sessions = res.scalars().all()
@@ -767,7 +762,12 @@ async def chat_endpoint(
         session_id = new_session.id
     else:
         # Verify ownership of existing session
-        await verify_session_ownership(session_id, user, db)
+        session_obj = await verify_session_ownership(session_id, user, db)
+        if user and not session_obj.user_id:
+            session_obj.user_id = user.id
+        if session_obj.title == "New Discussion" or not session_obj.title:
+            session_obj.title = clean_title
+        await db.commit()
 
     # Fetch prior conversation history
     hist_stmt = (
@@ -860,18 +860,14 @@ async def list_artifacts(
     user: Optional[UserModel] = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if user:
-        stmt = (
-            select(ArtifactModel)
-            .where(ArtifactModel.user_id == user.id)
-            .order_by(desc(ArtifactModel.created_at))
-        )
-    else:
-        stmt = (
-            select(ArtifactModel)
-            .where(ArtifactModel.user_id.is_(None))
-            .order_by(desc(ArtifactModel.created_at))
-        )
+    if not user:
+        return []
+
+    stmt = (
+        select(ArtifactModel)
+        .where(ArtifactModel.user_id == user.id)
+        .order_by(desc(ArtifactModel.created_at))
+    )
         
     res = await db.execute(stmt)
     artifacts = res.scalars().all()
