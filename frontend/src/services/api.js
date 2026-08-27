@@ -301,10 +301,18 @@ export const api = {
     return res.json();
   },
 
+  async getTranscripts(query = "") {
+    return this.getSources(query);
+  },
+
   async getEpisodeDetail(episodeId) {
     const res = await fetch(`${API_BASE}/sources/${episodeId}`);
     if (!res.ok) throw new Error('Failed to fetch episode details');
     return res.json();
+  },
+
+  async getSourceDetail(episodeId) {
+    return this.getEpisodeDetail(episodeId);
   },
 
   // --- Differentiating Intelligence Engines ---
@@ -340,6 +348,13 @@ export const api = {
     });
     if (!res.ok) throw new Error('Failed to generate decision memo');
     return res.json();
+  },
+
+  async generateDecision(param1, options = [], constraints = "") {
+    if (typeof param1 === 'object' && param1 !== null) {
+      return this.generateDecisionMemo(param1.decision_question, param1.options || [], param1.constraints || "");
+    }
+    return this.generateDecisionMemo(param1, options, constraints);
   },
 
   async generateExperimentBrief(problem, primaryMetric = "Activation Rate", hypothesis = "") {
@@ -390,5 +405,9 @@ export const api = {
     });
     if (!res.ok) throw new Error('Failed to run PMF diagnostic');
     return res.json();
+  },
+
+  async evaluatePMFDiagnostic(signals) {
+    return this.calculatePMFDiagnostic(signals);
   }
 };
