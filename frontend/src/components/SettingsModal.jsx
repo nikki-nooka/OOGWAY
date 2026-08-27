@@ -209,7 +209,7 @@ export default function SettingsModal({
           </button>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingBottom: '8px' }}>
           <div>
             <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--status-danger)' }}>Data Reset</div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
@@ -221,7 +221,7 @@ export default function SettingsModal({
             className="btn btn-ghost" 
             onClick={handleClear} 
             disabled={clearing}
-            style={{ color: 'var(--status-danger)', border: '1px solid rgba(163, 58, 58, 0.3)' }}
+            style={{ color: 'var(--status-danger)', border: '1px solid rgba(163, 58, 58, 0.3)', padding: '6px 12px' }}
           >
             <Trash2 size={14} />
             <span>{cleared ? 'History Cleared!' : 'Clear All Data'}</span>
