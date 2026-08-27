@@ -31,7 +31,8 @@ CORE OPERATING DIRECTIVES:
         db: AsyncSession,
         session_id: str,
         user_message: str,
-        model_override: Optional[str] = None
+        model_override: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> Dict[str, Any]:
         start_time = time.time()
 
@@ -187,6 +188,7 @@ Please provide a structured, grounded response citing relevant guests and timest
         saved_artifacts = []
         for art in extracted_artifacts:
             art_record = ArtifactModel(
+                user_id=user_id,
                 session_id=session_id,
                 message_id=assistant_msg_record.id,
                 title=art["title"],

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Text, DateTime, JSON, ForeignKey, Integer
+from sqlalchemy import Column, String, Text, DateTime, JSON, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
@@ -10,15 +10,46 @@ def generate_uuid() -> str:
 def utc_now():
     return datetime.now(timezone.utc)
 
+class UserModel(Base):
+    __tablename__ = "users"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    name = Column(String(100), nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    sessions = relationship("SessionModel", back_populates="user", cascade="all, delete-orphan", order_by="desc(SessionModel.updated_at)")
+    artifacts = relationship("ArtifactModel", back_populates="user", cascade="all, delete-orphan", order_by="desc(ArtifactModel.created_at)")
+    personal_context = relationship("PersonalContextModel", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+class PersonalContextModel(Base):
+    __tablename__ = "personal_context"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    company_type = Column(String(100), nullable=False, default="B2B SaaS")
+    users_scale = Column(String(100), nullable=False, default="10,000 MAU")
+    activation_rate = Column(String(100), nullable=False, default="20%")
+    problem = Column(Text, nullable=False, default="")
+    constraints = Column(Text, nullable=False, default="")
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user = relationship("UserModel", back_populates="personal_context")
+
 class SessionModel(Base):
     __tablename__ = "sessions"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     title = Column(String(255), nullable=False, default="New Discussion")
     model_provider = Column(String(50), default="ollama")
     created_at = Column(DateTime(timezone=True), default=utc_now)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
+    user = relationship("UserModel", back_populates="sessions")
     messages = relationship("MessageModel", back_populates="session", cascade="all, delete-orphan", order_by="MessageModel.created_at")
     artifacts = relationship("ArtifactModel", back_populates="session", cascade="all, delete-orphan", order_by="ArtifactModel.created_at")
 
@@ -41,6 +72,7 @@ class ArtifactModel(Base):
     __tablename__ = "artifacts"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     session_id = Column(String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=True, index=True)
     message_id = Column(String(36), nullable=True)
     title = Column(String(255), nullable=False)
@@ -49,5 +81,5 @@ class ArtifactModel(Base):
     meta = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), default=utc_now)
 
+    user = relationship("UserModel", back_populates="artifacts")
     session = relationship("SessionModel", back_populates="artifacts")
-

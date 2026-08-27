@@ -17,6 +17,11 @@ class Settings(BaseSettings):
         f"sqlite+aiosqlite:///{BASE_DIR}/lenny_growth.db"
     )
     
+    # Authentication & Security
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "lenny-growth-secret-key-2026-editorial-intelligence-master")
+    JWT_ALGORITHM: str = "HS256"
+
+    
     # LLM Providers Configuration
     DEFAULT_LLM_PROVIDER: str = os.getenv("DEFAULT_LLM_PROVIDER", "ollama")
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")

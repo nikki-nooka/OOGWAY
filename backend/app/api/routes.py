@@ -2,12 +2,14 @@ import time
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, desc
+from sqlalchemy import select, delete, desc, and_, or_
 from sqlalchemy.orm import selectinload
 
 from app.db.database import get_db
-from app.db.models import SessionModel, MessageModel, ArtifactModel
+from app.db.models import UserModel, PersonalContextModel, SessionModel, MessageModel, ArtifactModel
 from app.api.schemas import (
+    UserSignup, UserLogin, UserProfile, AuthResponse,
+    PersonalContextUpdate, PersonalContextResponse,
     ChatRequest, ChatResponse,
     SessionCreate, SessionSummary, SessionDetail, MessageDetail, ArtifactSchema,
     WritingRequest, WritingResponse, ArtifactCreateRequest, TopicSummary,
@@ -15,6 +17,8 @@ from app.api.schemas import (
     ChallengeRequest, ApplyContextRequest, DecisionMemoRequest, ExperimentBriefRequest,
     FrameworkRequest, CompareGuestsRequest, PMFDiagnosticRequest, VerifyGroundingRequest
 )
+from app.core.security import hash_password, verify_password, create_access_token
+from app.api.auth import get_current_user, get_optional_user, verify_session_ownership, verify_artifact_ownership
 from app.engine.agent import agent_orchestrator
 from app.engine.rag import rag_engine
 from app.engine.llm_provider import LLMFactory
@@ -35,6 +39,149 @@ async def get_health():
         transcripts_count=len(rag_engine.chunks),
         episodes_count=len(episodes),
         active_model=LLMFactory.get_active_provider_name()
+    )
+
+# --- Authentication Endpoints ---
+@router.post("/auth/signup", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+async def signup(req: UserSignup, db: AsyncSession = Depends(get_db)):
+    clean_email = req.email.strip().lower()
+    
+    # Check if email is already taken
+    stmt = select(UserModel).where(UserModel.email == clean_email)
+    res = await db.execute(stmt)
+    if res.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email address already exists. Please sign in."
+        )
+    
+    new_user = UserModel(
+        name=req.name.strip(),
+        email=clean_email,
+        password_hash=hash_password(req.password)
+    )
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+    
+    # Create default personal context
+    context = PersonalContextModel(
+        user_id=new_user.id,
+        company_type="B2B SaaS",
+        users_scale="10,000 MAU",
+        activation_rate="20%",
+        problem="Weak onboarding drop-off before reaching primary Aha! moment",
+        constraints="Small team, 6 months runway"
+    )
+    db.add(context)
+    await db.commit()
+
+    token = create_access_token({"sub": new_user.id, "email": new_user.email, "name": new_user.name})
+    return AuthResponse(
+        access_token=token,
+        token_type="bearer",
+        user=UserProfile(
+            id=new_user.id,
+            name=new_user.name,
+            email=new_user.email,
+            created_at=new_user.created_at
+        )
+    )
+
+@router.post("/auth/login", response_model=AuthResponse)
+async def login(req: UserLogin, db: AsyncSession = Depends(get_db)):
+    clean_email = req.email.strip().lower()
+    stmt = select(UserModel).where(UserModel.email == clean_email, UserModel.is_active == True)
+    res = await db.execute(stmt)
+    user = res.scalar_one_or_none()
+    
+    if not user or not verify_password(req.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password. Please check your credentials.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    
+    token = create_access_token({"sub": user.id, "email": user.email, "name": user.name})
+    return AuthResponse(
+        access_token=token,
+        token_type="bearer",
+        user=UserProfile(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            created_at=user.created_at
+        )
+    )
+
+@router.get("/auth/me", response_model=UserProfile)
+async def get_current_user_profile(user: UserModel = Depends(get_current_user)):
+    return UserProfile(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        created_at=user.created_at
+    )
+
+@router.post("/auth/logout")
+async def logout():
+    return {"message": "Successfully signed out. Session token cleared."}
+
+# --- Personal Context & Company Profile Endpoints ---
+@router.get("/user/context", response_model=PersonalContextResponse)
+async def get_user_context(
+    user: UserModel = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(PersonalContextModel).where(PersonalContextModel.user_id == user.id)
+    res = await db.execute(stmt)
+    ctx = res.scalar_one_or_none()
+    if not ctx:
+        ctx = PersonalContextModel(user_id=user.id)
+        db.add(ctx)
+        await db.commit()
+        await db.refresh(ctx)
+    return PersonalContextResponse(
+        id=ctx.id,
+        user_id=ctx.user_id,
+        company_type=ctx.company_type,
+        users_scale=ctx.users_scale,
+        activation_rate=ctx.activation_rate,
+        problem=ctx.problem,
+        constraints=ctx.constraints,
+        updated_at=ctx.updated_at
+    )
+
+@router.post("/user/context", response_model=PersonalContextResponse)
+async def update_user_context(
+    req: PersonalContextUpdate,
+    user: UserModel = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(PersonalContextModel).where(PersonalContextModel.user_id == user.id)
+    res = await db.execute(stmt)
+    ctx = res.scalar_one_or_none()
+    if not ctx:
+        ctx = PersonalContextModel(user_id=user.id)
+        db.add(ctx)
+    
+    ctx.company_type = req.company_type
+    ctx.users_scale = req.users_scale
+    ctx.activation_rate = req.activation_rate
+    ctx.problem = req.problem
+    ctx.constraints = req.constraints
+    
+    await db.commit()
+    await db.refresh(ctx)
+    return PersonalContextResponse(
+        id=ctx.id,
+        user_id=ctx.user_id,
+        company_type=ctx.company_type,
+        users_scale=ctx.users_scale,
+        activation_rate=ctx.activation_rate,
+        problem=ctx.problem,
+        constraints=ctx.constraints,
+        updated_at=ctx.updated_at
     )
 
 # --- Model Switcher & Status ---
@@ -149,7 +296,6 @@ async def get_topic_detail(topic_id: str):
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
     
-    # Query RAG for real chunks on this topic
     sample_chunks = rag_engine.search(topic["title"] + " " + " ".join(topic["top_guests"]), top_k=5)
     return {
         **topic,
@@ -166,7 +312,7 @@ async def get_topic_detail(topic_id: str):
         ]
     }
 
-# --- Transcripts & Sources Knowledge Base ---
+# --- Transcripts & Sources Knowledge Base (Public Domain Knowledge) ---
 @router.get("/sources")
 @router.get("/transcripts")
 async def list_sources(query: Optional[str] = None):
@@ -195,12 +341,10 @@ async def get_source_detail(episode_id: str):
     episodes = rag_engine.get_all_episodes()
     ep = next((e for e in episodes if e["episode_id"] == episode_id), None)
     if not ep:
-        # Search if id matches title or substring
         ep = next((e for e in episodes if episode_id.lower() in e["title"].lower() or episode_id.lower() in e["guest"].lower()), None)
     if not ep:
         raise HTTPException(status_code=404, detail="Episode not found")
     
-    # Collect all chunks belonging to this episode
     episode_chunks = [
         c.model_dump() for c in rag_engine.chunks 
         if c.episode_id == ep["episode_id"] or ep["title"].lower() in c.episode_title.lower()
@@ -211,14 +355,27 @@ async def get_source_detail(episode_id: str):
         "all_chunks": episode_chunks
     }
 
-# --- Sessions Management ---
+# --- Sessions Management (Isolated by User) ---
 @router.get("/sessions", response_model=List[SessionSummary])
-async def list_sessions(db: AsyncSession = Depends(get_db)):
-    stmt = (
-        select(SessionModel)
-        .options(selectinload(SessionModel.messages), selectinload(SessionModel.artifacts))
-        .order_by(desc(SessionModel.updated_at))
-    )
+async def list_sessions(
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if user:
+        stmt = (
+            select(SessionModel)
+            .where(SessionModel.user_id == user.id)
+            .options(selectinload(SessionModel.messages), selectinload(SessionModel.artifacts))
+            .order_by(desc(SessionModel.updated_at))
+        )
+    else:
+        stmt = (
+            select(SessionModel)
+            .where(SessionModel.user_id.is_(None))
+            .options(selectinload(SessionModel.messages), selectinload(SessionModel.artifacts))
+            .order_by(desc(SessionModel.updated_at))
+        )
+    
     res = await db.execute(stmt)
     sessions = res.scalars().all()
 
@@ -236,19 +393,13 @@ async def list_sessions(db: AsyncSession = Depends(get_db)):
     return summaries
 
 @router.post("/sessions", response_model=SessionSummary)
-async def create_session(req: SessionCreate, db: AsyncSession = Depends(get_db)):
-    # Auto-cleanup previous empty sessions with 0 messages to prevent clutter
-    try:
-        empty_stmt = select(SessionModel).options(selectinload(SessionModel.messages))
-        empty_res = await db.execute(empty_stmt)
-        for old_s in empty_res.scalars().all():
-            if len(old_s.messages) == 0:
-                await db.delete(old_s)
-        await db.commit()
-    except Exception:
-        pass
-
+async def create_session(
+    req: SessionCreate,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
     new_session = SessionModel(
+        user_id=user.id if user else None,
         title=req.title or "New Discussion",
         model_provider=req.model_provider or LLMFactory.get_active_provider_name()
     )
@@ -266,25 +417,48 @@ async def create_session(req: SessionCreate, db: AsyncSession = Depends(get_db))
         updated_at=new_session.updated_at
     )
 
+
 @router.delete("/sessions/clear_all")
-async def clear_all_sessions(db: AsyncSession = Depends(get_db)):
-    await db.execute(delete(ArtifactModel))
-    await db.execute(delete(MessageModel))
-    await db.execute(delete(SessionModel))
+async def clear_all_sessions(
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if user:
+        user_sessions_stmt = select(SessionModel.id).where(SessionModel.user_id == user.id)
+        user_sessions_res = await db.execute(user_sessions_stmt)
+        s_ids = [row[0] for row in user_sessions_res.all()]
+        if s_ids:
+            await db.execute(delete(ArtifactModel).where(ArtifactModel.session_id.in_(s_ids)))
+            await db.execute(delete(MessageModel).where(MessageModel.session_id.in_(s_ids)))
+            await db.execute(delete(SessionModel).where(SessionModel.id.in_(s_ids)))
+    else:
+        guest_sessions_stmt = select(SessionModel.id).where(SessionModel.user_id.is_(None))
+        guest_sessions_res = await db.execute(guest_sessions_stmt)
+        s_ids = [row[0] for row in guest_sessions_res.all()]
+        if s_ids:
+            await db.execute(delete(ArtifactModel).where(ArtifactModel.session_id.in_(s_ids)))
+            await db.execute(delete(MessageModel).where(MessageModel.session_id.in_(s_ids)))
+            await db.execute(delete(SessionModel).where(SessionModel.id.in_(s_ids)))
+            
     await db.commit()
-    return {"message": "All sessions cleared successfully"}
+    return {"message": "Conversations cleared successfully for your workspace."}
 
 @router.get("/sessions/{session_id}", response_model=SessionDetail)
-async def get_session_detail(session_id: str, db: AsyncSession = Depends(get_db)):
+async def get_session_detail(
+    session_id: str,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    session = await verify_session_ownership(session_id, user, db)
+    
+    # Reload with relationships
     stmt = (
         select(SessionModel)
-        .where(SessionModel.id == session_id)
+        .where(SessionModel.id == session.id)
         .options(selectinload(SessionModel.messages), selectinload(SessionModel.artifacts))
     )
     res = await db.execute(stmt)
-    session = res.scalar_one_or_none()
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+    full_session = res.scalar_one()
 
     messages = [
         MessageDetail(
@@ -297,7 +471,7 @@ async def get_session_detail(session_id: str, db: AsyncSession = Depends(get_db)
             latency_ms=m.latency_ms,
             created_at=m.created_at
         )
-        for m in session.messages
+        for m in full_session.messages
     ]
 
     artifacts = [
@@ -308,38 +482,45 @@ async def get_session_detail(session_id: str, db: AsyncSession = Depends(get_db)
             content=a.content,
             meta=a.meta or {}
         )
-        for a in session.artifacts
+        for a in full_session.artifacts
     ]
 
     return SessionDetail(
-        id=session.id,
-        title=session.title,
-        model_provider=session.model_provider,
+        id=full_session.id,
+        title=full_session.title,
+        model_provider=full_session.model_provider,
         messages=messages,
         artifacts=artifacts,
-        created_at=session.created_at,
-        updated_at=session.updated_at
+        created_at=full_session.created_at,
+        updated_at=full_session.updated_at
     )
 
 @router.delete("/sessions/{session_id}")
-async def delete_session(session_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_session(
+    session_id: str,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    await verify_session_ownership(session_id, user, db)
     stmt = delete(SessionModel).where(SessionModel.id == session_id)
-    result = await db.execute(stmt)
+    await db.execute(stmt)
     await db.commit()
-    if result.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Session not found")
     return {"message": "Session deleted successfully"}
 
 # --- Chat & Ask Endpoint ---
 @router.post("/chat", response_model=ChatResponse)
 @router.post("/ask", response_model=ChatResponse)
-async def chat_endpoint(req: ChatRequest, db: AsyncSession = Depends(get_db)):
-    # 1. Resolve or create session
+async def chat_endpoint(
+    req: ChatRequest,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
     session_id = req.session_id
     clean_title = req.message.strip().split("\n")[0][:45]
 
     if not session_id:
         new_session = SessionModel(
+            user_id=user.id if user else None,
             title=clean_title,
             model_provider=req.model or LLMFactory.get_active_provider_name()
         )
@@ -348,23 +529,24 @@ async def chat_endpoint(req: ChatRequest, db: AsyncSession = Depends(get_db)):
         await db.refresh(new_session)
         session_id = new_session.id
     else:
-        s_stmt = select(SessionModel).where(SessionModel.id == session_id)
-        s_res = await db.execute(s_stmt)
-        current_session = s_res.scalar_one_or_none()
-        if not current_session:
-            new_session = SessionModel(id=session_id, title=clean_title)
-            db.add(new_session)
-            await db.commit()
-        elif current_session.title in ["New Discussion", "New Conversation"]:
-            current_session.title = clean_title
-            await db.commit()
+        # Verify ownership of existing session
+        await verify_session_ownership(session_id, user, db)
 
-    # 2. Run agent orchestrator
+    # Fetch prior conversation history
+    hist_stmt = (
+        select(MessageModel)
+        .where(MessageModel.session_id == session_id)
+        .order_by(MessageModel.created_at)
+    )
+    hist_res = await db.execute(hist_stmt)
+    history_records = hist_res.scalars().all()
+    # Execute chat via Agent Orchestrator with RAG grounding and user_id isolation
     result = await agent_orchestrator.execute_chat(
         db=db,
         session_id=session_id,
         user_message=req.message,
-        model_override=req.model
+        model_override=req.model,
+        user_id=user.id if user else None
     )
 
     return ChatResponse(
@@ -378,147 +560,85 @@ async def chat_endpoint(req: ChatRequest, db: AsyncSession = Depends(get_db)):
         latency_ms=result["latency_ms"]
     )
 
-# --- Dedicated Writing Studio Endpoint (Ship 30 for 30) ---
+
+# --- Ship 30 for 30 Writing Studio ---
 @router.post("/writing/ship30", response_model=WritingResponse)
-async def write_ship30_essay(req: WritingRequest, db: AsyncSession = Depends(get_db)):
+@router.post("/writing/generate", response_model=WritingResponse)
+async def generate_ship30_essay(
+    req: WritingRequest,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
     start_time = time.time()
     
-    # 1. Retrieve grounded context
-    query = req.topic
-    if req.guest_focus:
-        query = f"{req.guest_focus} {req.topic}"
-    
-    search_results = rag_engine.search(query, top_k=5)
-    context_str = rag_engine.format_context_for_prompt(search_results)
-    citations = [res["citation"].model_dump() for res in search_results]
+    # Check if user has personal context to incorporate
+    personal_ctx = ""
+    if user:
+        ctx_stmt = select(PersonalContextModel).where(PersonalContextModel.user_id == user.id)
+        ctx_res = await db.execute(ctx_stmt)
+        user_ctx = ctx_res.scalar_one_or_none()
+        if user_ctx and user_ctx.problem:
+            personal_ctx = f"Company Context: {user_ctx.company_type} ({user_ctx.users_scale}), Bottleneck: {user_ctx.problem}"
 
-    # 2. Construct prompt
-    system_prompt = ship30_skill.SYSTEM_PROMPT
-    prompt = ship30_skill.build_prompt(req.topic, context_str)
-
-    # 3. Call LLM
-    provider = LLMFactory.get_provider(req.model)
-    llm_res = await provider.generate(prompt, system_prompt)
-    content = llm_res["content"]
-    model_used = llm_res.get("provider", "lenny_writing_skill")
-
-    # If offline fallback or short content, synthesize robust grounded essay
-    if llm_res.get("is_fallback") or len(content.split()) < 250:
-        quotes_block = "\n\n".join([
-            f"> *\"{c['quote']}\"*\n> — **{c['guest']}**, *{c['episode_title']}* ({c['timestamp']})"
-            for c in citations[:3]
-        ])
-        
-        content = f"""# The Atomic Playbook: Mastering {req.topic}
-
-### Why 90% of product teams stagnate on {req.topic} (and how elite builders break through)
-
-Most product managers believe that scaling {req.topic} requires massive roadmaps and endless discovery cycles.
-
-They are mistaken.
-
-The best operators featured on Lenny's Podcast approach this with radical clarity, precise metrics, and rapid validation loops.
-
-Here is the exact battle-tested framework synthesized from verified podcast insights.
-
----
-
-## Pillar 1: Diagnose the Core Signal Before Adding Complexity
-
-Before writing code or adjusting features, top teams identify whether users are experiencing genuine, repeatable value.
-
-{quotes_block}
-
-### Key Execution Steps:
-- **Establish a Cohort Retention Baseline:** Look for the curve flattening out rather than declining to zero.
-- **Run High-Velocity Experiments:** Focus on removing friction in the first 60 seconds of user interaction.
-- **Listen to High-Intent Outliers:** The users who complain passionately are often your future power cohort.
-
----
-
-## Pillar 2: Build Self-Reinforcing Product Loops
-
-Linear funnels require continuous ad spend. Elite growth engines rely on closed loops where an active user's engagement directly attracts the next user or team member.
-
-### Tactical Checkpoints:
-1. **Viral & Collaborative Invitations:** Make multi-player interactions the natural path of least resistance.
-2. **Data Compounding:** Ensure that the more a team uses the tool, the higher their switching cost becomes.
-3. **Transparent Pricing Tiers:** Align price scaling directly with the value metric that customers celebrate.
-
----
-
-## Pillar 3: Tactical Monday Morning Implementation Protocol
-
-To implement this playbook with your squad this week:
-
-1. **Step 1:** Audit your activation bottleneck using event funnel metrics.
-2. **Step 2:** Schedule 5 user interviews with customers who dropped off at step 2.
-3. **Step 3:** Deploy a simplified prototype addressing the single largest point of confusion.
-4. **Step 4:** Measure 7-day retention impact before shipping further optimizations.
-
----
-
-### The 1-Sentence Takeaway
-> **Sustainable growth is never about top-of-funnel noise; it is the compounding output of users repeatedly experiencing unquestionable product value.**
-
----
-
-### Grounded Sources Cited:
-""" + "\n".join([f"- **{c['guest']}** — *{c['episode_title']}* (Timestamp: `{c['timestamp']}`) | [View Source]({c['source_url']})" for c in citations])
-
-    # Extract title and hook
-    lines = [l.strip() for l in content.split("\n") if l.strip()]
-    title = lines[0].replace("#", "").strip() if lines else f"The {req.topic} Playbook"
-    hook = lines[1] if len(lines) > 1 else "Mastering high-leverage growth frameworks."
-    word_count = len(content.split())
+    essay = await ship30_skill.generate_atomic_essay(
+        topic=req.topic,
+        target_words=req.target_words or 1250,
+        style=req.style or "ship30",
+        guest_focus=req.guest_focus
+    )
     latency_ms = int((time.time() - start_time) * 1000)
 
-    # Automatically package as an artifact
-    art_dict = {
-        "id": f"ship30-{int(time.time())}",
-        "title": title,
-        "artifact_type": "markdown",
-        "content": content,
-        "meta": {
-            "topic": req.topic,
-            "word_count": word_count,
-            "style": "ship30",
-            "citations_count": len(citations)
-        }
-    }
-
-    # If session_id provided, persist to database
-    if req.session_id:
-        try:
-            art_record = ArtifactModel(
-                session_id=req.session_id,
-                title=title,
-                artifact_type="markdown",
-                content=content,
-                meta=art_dict["meta"]
-            )
-            db.add(art_record)
-            await db.commit()
-        except Exception:
-            pass
+    # Persist generated essay into user's private artifacts
+    art_model = ArtifactModel(
+        user_id=user.id if user else None,
+        session_id=req.session_id,
+        title=essay.title,
+        artifact_type="markdown",
+        content=essay.content,
+        meta={"style": req.style, "word_count": essay.word_count, "hook": essay.hook}
+    )
+    db.add(art_model)
+    await db.commit()
+    await db.refresh(art_model)
 
     return WritingResponse(
-        title=title,
-        content=content,
-        hook=hook,
-        word_count=word_count,
-        citations=citations,
-        artifact=art_dict,
-        model_used=model_used,
+        title=essay.title,
+        content=essay.content,
+        hook=essay.hook,
+        word_count=essay.word_count,
+        citations=essay.citations,
+        artifact={
+            "id": art_model.id,
+            "title": essay.title,
+            "type": "markdown",
+            "word_count": essay.word_count
+        },
+        model_used=LLMFactory.get_active_provider_name(),
         latency_ms=latency_ms
     )
 
-# --- Artifacts Management ---
+# --- Artifacts Management (Private to User) ---
 @router.get("/artifacts", response_model=List[ArtifactSchema])
-async def list_artifacts(db: AsyncSession = Depends(get_db)):
-    stmt = select(ArtifactModel).order_by(desc(ArtifactModel.created_at))
+async def list_artifacts(
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if user:
+        stmt = (
+            select(ArtifactModel)
+            .where(ArtifactModel.user_id == user.id)
+            .order_by(desc(ArtifactModel.created_at))
+        )
+    else:
+        stmt = (
+            select(ArtifactModel)
+            .where(ArtifactModel.user_id.is_(None))
+            .order_by(desc(ArtifactModel.created_at))
+        )
+        
     res = await db.execute(stmt)
     artifacts = res.scalars().all()
+
     return [
         ArtifactSchema(
             id=a.id,
@@ -531,8 +651,13 @@ async def list_artifacts(db: AsyncSession = Depends(get_db)):
     ]
 
 @router.post("/artifacts", response_model=ArtifactSchema)
-async def create_artifact(req: ArtifactCreateRequest, db: AsyncSession = Depends(get_db)):
+async def create_artifact(
+    req: ArtifactCreateRequest,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
     new_art = ArtifactModel(
+        user_id=user.id if user else None,
         session_id=req.session_id,
         title=req.title,
         artifact_type=req.artifact_type,
@@ -542,6 +667,7 @@ async def create_artifact(req: ArtifactCreateRequest, db: AsyncSession = Depends
     db.add(new_art)
     await db.commit()
     await db.refresh(new_art)
+
     return ArtifactSchema(
         id=new_art.id,
         title=new_art.title,
@@ -551,12 +677,12 @@ async def create_artifact(req: ArtifactCreateRequest, db: AsyncSession = Depends
     )
 
 @router.get("/artifacts/{artifact_id}", response_model=ArtifactSchema)
-async def get_artifact(artifact_id: str, db: AsyncSession = Depends(get_db)):
-    stmt = select(ArtifactModel).where(ArtifactModel.id == artifact_id)
-    res = await db.execute(stmt)
-    art = res.scalar_one_or_none()
-    if not art:
-        raise HTTPException(status_code=404, detail="Artifact not found")
+async def get_artifact_detail(
+    artifact_id: str,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    art = await verify_artifact_ownership(artifact_id, user, db)
     return ArtifactSchema(
         id=art.id,
         title=art.title,
@@ -566,223 +692,145 @@ async def get_artifact(artifact_id: str, db: AsyncSession = Depends(get_db)):
     )
 
 @router.delete("/artifacts/{artifact_id}")
-async def delete_artifact(artifact_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_artifact(
+    artifact_id: str,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    await verify_artifact_ownership(artifact_id, user, db)
     stmt = delete(ArtifactModel).where(ArtifactModel.id == artifact_id)
-    res = await db.execute(stmt)
+    await db.execute(stmt)
     await db.commit()
-    if res.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Artifact not found")
-    return {"message": "Artifact deleted successfully"}
-
-# --- Live Benchmark & Quality Metrics ---
-@router.get("/benchmarks")
-async def get_system_benchmarks():
-    """
-    Executes live search queries and returns performance benchmarks,
-    latency metrics, and competitive comparisons against generic LLMs & traditional RAG.
-    """
-    test_queries = [
-        "Gustaf Alströmer product market fit retention",
-        "Elena Verna B2B PLG viral loops",
-        "Shreyas Doshi LNO framework prioritization",
-        "Brian Chesky 11 star experience Airbnb",
-        "Rahul Vohra Superhuman 40 percent PMF engine"
-    ]
-    
-    live_latency_results = []
-    for q in test_queries:
-        t0 = time.perf_counter()
-        hits = rag_engine.search(q, top_k=4)
-        t1 = time.perf_counter()
-        lat_ms = round((t1 - t0) * 1000, 2)
-        top_g = "None"
-        if hits:
-            cit = hits[0].get("citation") if isinstance(hits[0], dict) else getattr(hits[0], "citation", None)
-            if cit:
-                top_g = getattr(cit, "guest", cit.get("guest", "Unknown") if isinstance(cit, dict) else "Unknown")
-        live_latency_results.append({
-            "query": q,
-            "latency_ms": lat_ms,
-            "hits_count": len(hits),
-            "top_guest": top_g
-        })
-
-    
-    avg_latency = round(sum(r["latency_ms"] for r in live_latency_results) / len(live_latency_results), 2)
-    
-    return {
-        "status": "success",
-        "timestamp": time.time(),
-        "live_metrics": {
-            "average_retrieval_latency_ms": avg_latency,
-            "total_indexed_chunks": len(rag_engine.chunks),
-            "total_episodes": len(rag_engine.get_all_episodes()),
-            "memory_footprint_mb": 18.4,
-            "cold_start_time_ms": 42.0,
-            "query_tests": live_latency_results
-        },
-        "comparison_matrix": [
-            {
-                "metric": "Retrieval Latency (4,389 chunks)",
-                "our_system": f"{avg_latency} ms (BM25 Entity Engine)",
-                "traditional_vector_rag": "180 - 350 ms (FAISS / OpenAI Embeddings)",
-                "generic_llm": "N/A (No grounded retrieval)",
-                "advantage": "15x - 30x Faster"
-            },
-            {
-                "metric": "Speaker Citation Precision",
-                "our_system": "99.4% (Exact Entity Boosted +25.0)",
-                "traditional_vector_rag": "71.2% (Suffers semantic speaker drift)",
-                "generic_llm": "14.8% (Hallucinates non-existent quotes)",
-                "advantage": "Zero Speaker Confusion"
-            },
-            {
-                "metric": "Out-of-Domain Refusal Rate",
-                "our_system": "100.0% (Zero fake citations)",
-                "traditional_vector_rag": "42.0% (Forces weak distance matches)",
-                "generic_llm": "6.0% (Hallucinates false PM facts)",
-                "advantage": "Strict Boundary Guardrail"
-            },
-            {
-                "metric": "Ship 30 Essay Quality & Length",
-                "our_system": "~1,250 words (1-3-1 Hook + Modular H2s)",
-                "traditional_vector_rag": "~450 words (Generic summary)",
-                "generic_llm": "~350 words (Generic fluff)",
-                "advantage": "3.5x Content Density"
-            },
-            {
-                "metric": "Local Execution Overhead",
-                "our_system": "18 MB RAM (Zero GPU required)",
-                "traditional_vector_rag": "2.4 GB RAM (PyTorch / CUDA embeddings)",
-                "generic_llm": "Cloud API only",
-                "advantage": "Zero Evaluator Setup"
-            }
-        ]
-    }
+    return {"message": "Artifact deleted successfully from private library"}
 
 # --- Differentiating Intelligence Endpoints ---
-
 @router.post("/challenge")
-async def challenge_advice_endpoint(req: ChallengeRequest):
-    """
-    Challenge Lenny's advice: Surfaces counterpoints, failure conditions,
-    and alternative guest models from the transcript repository.
-    """
-    return intelligence_engine.challenge_advice(topic=req.topic, claim=req.claim or "")
+async def challenge_advice_route(req: ChallengeRequest):
+    return intelligence_engine.challenge_advice(req.topic, req.claim)
 
+@router.post("/context/apply")
 @router.post("/apply-context")
-async def apply_context_endpoint(req: ApplyContextRequest):
-    """
-    Applies user company context (metrics, constraints, problem) to Lenny's principles.
-    """
-    ctx = {
+async def apply_context_route(
+    req: ApplyContextRequest,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    context_dict = {
         "company_type": req.company_type,
         "users": req.users,
         "activation": req.activation,
         "problem": req.problem,
         "constraints": req.constraints
     }
-    return intelligence_engine.apply_context(context=ctx, topic=req.topic)
+    
+    # If user is authenticated, also sync to their personal_context model
+    if user:
+        ctx_stmt = select(PersonalContextModel).where(PersonalContextModel.user_id == user.id)
+        ctx_res = await db.execute(ctx_stmt)
+        ctx = ctx_res.scalar_one_or_none()
+        if ctx:
+            ctx.company_type = req.company_type
+            ctx.users_scale = req.users
+            ctx.activation_rate = req.activation
+            ctx.problem = req.problem
+            ctx.constraints = req.constraints
+            await db.commit()
 
-async def _get_or_create_default_session(db: AsyncSession) -> str:
-    stmt = select(SessionModel).limit(1)
-    res = await db.execute(stmt)
-    sess = res.scalars().first()
-    if not sess:
-        sess = SessionModel(title="Executive Workspace", model_provider="ollama")
-        db.add(sess)
-        await db.commit()
-        await db.refresh(sess)
-    return sess.id
+    return intelligence_engine.apply_context(context_dict, req.topic)
 
+@router.post("/decision/memo")
+@router.post("/decision-memo")
 @router.post("/decisions")
-async def generate_decision_endpoint(req: DecisionMemoRequest, db: AsyncSession = Depends(get_db)):
-    """
-    Generates a structured Decision Memo comparing Option A vs Option B with strengths, risks, and transcript evidence.
-    """
-    memo_data = intelligence_engine.generate_decision_memo(
-        decision_question=req.decision_question,
-        options=req.options,
-        constraints=req.constraints or ""
-    )
-    sess_id = await _get_or_create_default_session(db)
-    new_art = ArtifactModel(
-        session_id=sess_id,
-        title=memo_data["title"],
+async def generate_decision_memo_route(
+    req: DecisionMemoRequest,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    res = intelligence_engine.generate_decision_memo(req.decision_question, req.options, req.constraints)
+    
+    # Save decision memo into user's private artifacts
+    art_model = ArtifactModel(
+        user_id=user.id if user else None,
+        title=res["title"],
         artifact_type="markdown",
-        content=memo_data["artifact_content"],
+        content=res["artifact_content"],
         meta={"type": "decision_memo", "question": req.decision_question}
     )
-    db.add(new_art)
+    db.add(art_model)
     await db.commit()
-    await db.refresh(new_art)
-    memo_data["artifact_id"] = new_art.id
-    return memo_data
+    await db.refresh(art_model)
+    
+    res["artifact_id"] = art_model.id
+    return res
 
+@router.post("/experiment/brief")
+@router.post("/experiment-brief")
 @router.post("/experiments")
-async def generate_experiment_endpoint(req: ExperimentBriefRequest, db: AsyncSession = Depends(get_db)):
-    """
-    Generates an Experiment Brief with hypothesis, sample size, primary metrics, and guardrails.
-    """
-    exp_data = intelligence_engine.generate_experiment_brief(
-        problem=req.problem,
-        metric=req.primary_metric or "Activation Rate",
-        hypothesis=req.hypothesis or ""
-    )
-    sess_id = await _get_or_create_default_session(db)
-    new_art = ArtifactModel(
-        session_id=sess_id,
-        title=exp_data["title"],
+async def generate_experiment_brief_route(
+    req: ExperimentBriefRequest,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    res = intelligence_engine.generate_experiment_brief(req.problem, req.primary_metric, req.hypothesis)
+    
+    # Save experiment brief into user's private artifacts
+    content_str = res.get("artifact_content") or res.get("brief_content") or ""
+    art_model = ArtifactModel(
+        user_id=user.id if user else None,
+        title=res["title"],
         artifact_type="markdown",
-        content=exp_data["artifact_content"],
-        meta={"type": "experiment_brief", "metric": req.primary_metric}
+        content=content_str,
+        meta={"type": "experiment_brief", "problem": req.problem}
     )
-    db.add(new_art)
-    await db.commit()
-    await db.refresh(new_art)
-    exp_data["artifact_id"] = new_art.id
-    return exp_data
 
+    db.add(art_model)
+    await db.commit()
+    await db.refresh(art_model)
+    
+    res["artifact_id"] = art_model.id
+    return res
+
+@router.post("/framework/build")
+@router.post("/framework-build")
 @router.post("/frameworks")
-async def build_framework_endpoint(req: FrameworkRequest, db: AsyncSession = Depends(get_db)):
-    """
-    Generates a visual ASCII/Markdown mental model hierarchy framework.
-    """
-    fw_data = intelligence_engine.build_framework(concept=req.concept)
-    sess_id = await _get_or_create_default_session(db)
-    new_art = ArtifactModel(
-        session_id=sess_id,
-        title=f"{req.concept} Framework",
+async def build_framework_route(
+    req: FrameworkRequest,
+    user: Optional[UserModel] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    res = intelligence_engine.build_framework(req.concept)
+    
+    # Save framework tree into user's private artifacts
+    content_str = res.get("artifact_content") or res.get("diagram") or ""
+    art_model = ArtifactModel(
+        user_id=user.id if user else None,
+        title=f"Framework: {req.concept}",
         artifact_type="markdown",
-        content=fw_data["artifact_content"],
-        meta={"type": "framework", "concept": req.concept}
+        content=content_str,
+        meta={"type": "framework_tree", "concept": req.concept}
     )
-    db.add(new_art)
+
+    db.add(art_model)
     await db.commit()
-    await db.refresh(new_art)
-    fw_data["artifact_id"] = new_art.id
-    return fw_data
+    await db.refresh(art_model)
+    
+    res["artifact_id"] = art_model.id
+    return res
 
 
+@router.post("/compare/guests")
 @router.post("/compare-guests")
-async def compare_guests_endpoint(req: CompareGuestsRequest):
-    """
-    Compares differing guest methodologies on a topic (Consensus vs Disagreement).
-    """
-    return intelligence_engine.compare_guests(topic=req.topic, guest_names=req.guest_names)
+async def compare_guests_route(req: CompareGuestsRequest):
+    return intelligence_engine.compare_guests(req.topic, req.guest_names)
 
+@router.get("/knowledge/graph")
 @router.get("/knowledge-graph")
-async def get_knowledge_graph_endpoint():
-    """
-    Returns relational knowledge graph nodes and edges across 279 episodes.
-    """
+async def get_knowledge_graph_route():
     return intelligence_engine.get_knowledge_graph()
 
+@router.post("/pmf/diagnostic")
 @router.post("/pmf-diagnostic")
-async def evaluate_pmf_diagnostic_endpoint(req: PMFDiagnosticRequest):
-    """
-    Evaluates an interactive, transparent PMF score based on 6 core telemetry signals.
-    """
+async def evaluate_pmf_diagnostic_route(req: PMFDiagnosticRequest):
     signals = {
         "retention": req.retention,
         "activation": req.activation,
@@ -791,13 +839,10 @@ async def evaluate_pmf_diagnostic_endpoint(req: PMFDiagnosticRequest):
         "willingness_to_pay": req.willingness_to_pay,
         "usage_frequency": req.usage_frequency
     }
-    return intelligence_engine.evaluate_pmf_diagnostic(signals=signals)
+    return intelligence_engine.evaluate_pmf_diagnostic(signals)
 
-@router.post("/writing/verify-grounding")
-async def verify_essay_grounding_endpoint(req: VerifyGroundingRequest):
-    """
-    Evaluates claims in an essay against 4,389 transcript chunks, returning claim verification counts.
-    """
-    return intelligence_engine.verify_essay_grounding(essay_text=req.essay_text)
-
+@router.post("/essay/verify_grounding")
+@router.post("/verify-grounding")
+async def verify_essay_grounding_route(req: VerifyGroundingRequest):
+    return intelligence_engine.verify_essay_grounding(req.essay_text)
 

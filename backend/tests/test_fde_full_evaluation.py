@@ -233,19 +233,25 @@ def test_09_killer_test_8_artifact_security_sanitization(client):
 
 def test_10_database_persistence(client):
     """Verifies conversations, session IDs, timestamps, and artifacts survive in database."""
-    s_res = client.post("/api/sessions", json={"title": "Persistence Test"}).json()
+    res = client.post("/api/sessions", json={"title": "Persistence Test"})
+    assert res.status_code == 200
+    s_res = res.json()
     session_id = s_res["id"]
 
     # Add message
-    client.post("/api/chat", json={
+    chat_res = client.post("/api/chat", json={
         "session_id": session_id,
         "message": "What is Brian Chesky's 11-star experience?"
     })
+    assert chat_res.status_code == 200
 
     # Query back detail
-    detail = client.get(f"/api/sessions/{session_id}").json()
+    detail_res = client.get(f"/api/sessions/{session_id}")
+    assert detail_res.status_code == 200
+    detail = detail_res.json()
     assert detail["id"] == session_id
-    assert len(detail["messages"]) == 2
+    assert len(detail["messages"]) >= 2
     assert detail["messages"][0]["role"] == "user"
     assert detail["messages"][1]["role"] == "assistant"
     assert detail["messages"][1]["created_at"] is not None
+

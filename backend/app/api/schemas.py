@@ -1,7 +1,46 @@
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
+# --- Authentication & User Schemas ---
+class UserSignup(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="Full Name")
+    email: str = Field(..., description="Valid user email address")
+    password: str = Field(..., min_length=6, description="Password (minimum 6 characters)")
+
+class UserLogin(BaseModel):
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., min_length=1, description="Password")
+
+class UserProfile(BaseModel):
+    id: str
+    name: str
+    email: str
+    created_at: datetime
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserProfile
+
+class PersonalContextUpdate(BaseModel):
+    company_type: str = Field("B2B SaaS", description="e.g. B2B SaaS, Marketplace, Consumer")
+    users_scale: str = Field("10,000 MAU", description="Current audience/user scale")
+    activation_rate: str = Field("20%", description="Current activation baseline")
+    problem: str = Field("", description="Primary friction or bottleneck")
+    constraints: str = Field("", description="Team size, runway, constraints")
+
+class PersonalContextResponse(BaseModel):
+    id: str
+    user_id: str
+    company_type: str
+    users_scale: str
+    activation_rate: str
+    problem: str
+    constraints: str
+    updated_at: datetime
+
+# --- Chat & Session Schemas ---
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="User prompt or PM/Growth question")
     session_id: Optional[str] = Field(None, description="Active session UUID")
@@ -150,5 +189,3 @@ class PMFDiagnosticRequest(BaseModel):
 
 class VerifyGroundingRequest(BaseModel):
     essay_text: str
-
-

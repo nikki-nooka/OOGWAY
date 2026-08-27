@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Compass, 
   MessageSquare, 
@@ -10,10 +10,11 @@ import {
   Moon, 
   Settings, 
   Sparkles,
-  Search
+  Search,
+  User,
+  LogOut,
+  Sliders
 } from 'lucide-react';
-
-
 
 export default function Navbar({ 
   activeTab, 
@@ -23,9 +24,19 @@ export default function Navbar({
   onOpenSettings, 
   theme, 
   onToggleTheme,
-  onOpenSearch
+  onOpenSearch,
+  currentUser,
+  onOpenAuth,
+  onLogout,
+  onOpenContext
 }) {
   const isOllamaConnected = modelsData?.providers?.ollama?.available;
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  };
 
   return (
     <header className="navbar-editorial">
@@ -96,9 +107,7 @@ export default function Navbar({
         </button>
       </nav>
 
-
-
-      {/* Right Controls: Model Status, Search, Theme, Settings */}
+      {/* Right Controls: Model Status, Search, Theme, User Profile */}
       <div className="nav-actions">
         {/* Model Status Pill */}
         <button 
@@ -148,6 +157,177 @@ export default function Navbar({
         >
           <Settings size={16} />
         </button>
+
+        {/* User Account / Profile Control */}
+        {currentUser ? (
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setIsProfileMenuOpen(prev => !prev)}
+              className="btn btn-ghost"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 10px 4px 6px',
+                borderRadius: '20px',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-secondary)',
+                cursor: 'pointer'
+              }}
+              title="Your Private Workspace Account"
+            >
+              <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: 'var(--accent-primary)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.75rem',
+                fontWeight: 700
+              }}>
+                {getInitials(currentUser.name)}
+              </div>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {currentUser.name.split(' ')[0]}
+              </span>
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {isProfileMenuOpen && (
+              <>
+                <div 
+                  style={{ position: 'fixed', inset: 0, zIndex: 100 }} 
+                  onClick={() => setIsProfileMenuOpen(false)} 
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '110%',
+                  right: 0,
+                  width: '230px',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--shadow-lg)',
+                  padding: '8px 0',
+                  zIndex: 101,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-primary)' }}>
+                      {currentUser.name}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {currentUser.email}
+                    </div>
+                    <div style={{ 
+                      display: 'inline-block', 
+                      fontSize: '0.7rem', 
+                      background: 'var(--bg-tertiary)', 
+                      color: 'var(--status-success)', 
+                      padding: '2px 6px', 
+                      borderRadius: '4px', 
+                      marginTop: '4px',
+                      fontWeight: 600 
+                    }}>
+                      🔒 Private Workspace
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      if (onOpenContext) onOpenContext();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 14px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    className="dropdown-item"
+                  >
+                    <Sliders size={14} />
+                    <span>Company Context Profile</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      onOpenSettings();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 14px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    className="dropdown-item"
+                  >
+                    <Settings size={14} />
+                    <span>Settings & Privacy</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      onLogout();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 14px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-primary)',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      borderTop: '1px solid var(--border-subtle)',
+                      marginTop: '4px',
+                      textAlign: 'left'
+                    }}
+                    className="dropdown-item"
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={onOpenAuth}
+            className="btn btn-ghost"
+            style={{
+              padding: '6px 12px',
+              fontSize: '12.5px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <User size={14} />
+            <span>Sign In</span>
+          </button>
+        )}
 
         {/* New Chat CTA */}
         <button 

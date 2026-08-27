@@ -15,6 +15,7 @@ import KnowledgeBaseModal from './components/KnowledgeBaseModal';
 import EpisodeDetailModal from './components/EpisodeDetailModal';
 import ContextApplicationModal from './components/ContextApplicationModal';
 import DecisionModeModal from './components/DecisionModeModal';
+import AuthModal from './components/AuthModal';
 
 const getTabFromPath = (pathname) => {
   const path = (pathname || '').toLowerCase().replace(/\/$/, '');
@@ -32,12 +33,17 @@ export default function App() {
   // Navigation & View State (with direct browser URL sync)
   const [activeTab, setActiveTab] = useState(() => getTabFromPath(window.location.pathname));
   
+  // User Authentication & Private Workspace State
+  const [currentUser, setCurrentUser] = useState(() => api.authStorage.getUser());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   // Data State
   const [sessions, setSessions] = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [currentSession, setCurrentSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+
   
   // Model & System State
   const [modelsData, setModelsData] = useState(null);
@@ -109,11 +115,28 @@ export default function App() {
 
       if (sessionsRes.length > 0) {
         selectSession(sessionsRes[0].id);
+      } else {
+        setActiveSessionId(null);
+        setCurrentSession(null);
+        setMessages([]);
       }
     } catch (err) {
       console.error("Initial load error:", err);
     }
   };
+
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    setIsAuthModalOpen(false);
+    loadInitialData();
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setCurrentUser(null);
+    loadInitialData();
+  };
+
 
   // Route Navigator that synchronizes browser URL (e.g. localhost:3000/artifacts)
   const navigateToTab = (tabKey, replace = false) => {
@@ -366,7 +389,12 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenSearch={() => setIsKnowledgeBaseOpen(true)}
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
+        onOpenContext={() => setIsContextModalOpen(true)}
       />
+
 
       {/* Main Content Area Routing */}
       <main className="app-main-content">
@@ -511,6 +539,13 @@ export default function App() {
         onClose={() => setIsDecisionModalOpen(false)}
         onDecisionResult={handleDecisionResult}
       />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }
+

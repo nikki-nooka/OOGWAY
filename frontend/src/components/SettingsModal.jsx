@@ -222,6 +222,36 @@ export default function SettingsModal({
           </div>
         </div>
 
+        {/* Section 2.5: Privacy & Security Architecture */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.65rem', fontWeight: 700 }}>
+            Security & Workspace Privacy:
+          </h3>
+
+          <div style={{
+            padding: '0.85rem 1rem',
+            backgroundColor: 'var(--bg-app)',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border-medium)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            fontSize: '0.82rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--status-success)', fontWeight: 600 }}>
+              <span>🔒 Multi-User Private Workspaces</span>
+            </div>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+              All conversations, custom company context profiles, and generated artifacts are strictly partitioned by cryptographic user IDs. Cross-tenant access is rejected at the API boundary with 403 Forbidden.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <span>• PBKDF2-SHA256 (100k rounds)</span>
+              <span>• HMAC-SHA256 Signed Tokens</span>
+              <span>• Iframe & HTML XSS Sanitization</span>
+            </div>
+          </div>
+        </div>
+
         <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', margin: '1rem 0' }} />
 
         {/* Section 3: Appearance & Maintenance */}
@@ -232,6 +262,7 @@ export default function SettingsModal({
               Current: {theme === 'dark' ? 'Editorial Dark' : 'Warm Editorial Light'}
             </div>
           </div>
+
 
           <button className="btn btn-secondary" onClick={onToggleTheme}>
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
