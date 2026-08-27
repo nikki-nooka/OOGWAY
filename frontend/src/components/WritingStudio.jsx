@@ -28,11 +28,14 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
   const [viewMode, setViewMode] = useState('preview'); // 'preview' | 'edit'
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [groundingCheck, setGroundingCheck] = useState(null);
+  const [verifyingGrounding, setVerifyingGrounding] = useState(false);
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setGenerating(true);
     setSaved(false);
+    setGroundingCheck(null);
 
     try {
       const res = await api.generateShip30Essay({
@@ -45,12 +48,33 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
       setGeneratedEssay(res);
       setEditedContent(res.content);
       setViewMode('preview');
+
+      // Automatically evaluate claims grounding
+      try {
+        const verifyRes = await api.verifyEssayGrounding(res.content);
+        setGroundingCheck(verifyRes);
+      } catch (e) {
+        console.warn('Grounding check failed:', e);
+      }
     } catch (err) {
       console.error("Error generating essay:", err);
     } finally {
       setGenerating(false);
     }
   };
+
+  const handleManualVerifyGrounding = async () => {
+    setVerifyingGrounding(true);
+    try {
+      const verifyRes = await api.verifyEssayGrounding(editedContent || generatedEssay?.content || '');
+      setGroundingCheck(verifyRes);
+    } catch (err) {
+      console.error('Grounding verification error:', err);
+    } finally {
+      setVerifyingGrounding(false);
+    }
+  };
+
 
   const handleCopy = () => {
     navigator.clipboard.writeText(editedContent || generatedEssay?.content || '');
@@ -207,9 +231,35 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
               <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {generatedEssay.title}
               </span>
+              {groundingCheck && (
+                <span style={{
+                  fontSize: '11.5px',
+                  fontWeight: 600,
+                  backgroundColor: groundingCheck.grounding_confidence_pct >= 75 ? 'rgba(36, 93, 85, 0.12)' : 'rgba(154, 91, 46, 0.12)',
+                  color: groundingCheck.grounding_confidence_pct >= 75 ? 'var(--color-primary-forest, #245D55)' : 'var(--accent-primary, #9A5B2E)',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  ✓ {groundingCheck.supported_claims_count}/{groundingCheck.total_claims_evaluated} Claims Grounded ({groundingCheck.grounding_confidence_pct}%)
+                </span>
+              )}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                className="btn btn-secondary"
+                onClick={handleManualVerifyGrounding}
+                disabled={verifyingGrounding}
+                style={{ fontSize: '12px' }}
+                title="Verify individual essay claims against 4,389 transcript passages"
+              >
+                <Sparkles size={13} color="var(--accent-primary)" />
+                <span>{verifyingGrounding ? 'Evaluating...' : 'Re-verify Grounding'}</span>
+              </button>
+
               {/* View Toggle */}
               <div className="artifact-tabs">
                 <button 

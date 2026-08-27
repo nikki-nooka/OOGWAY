@@ -157,6 +157,94 @@ export const api = {
     const res = await fetch(`${API_BASE}/benchmarks`);
     if (!res.ok) throw new Error('Failed to fetch benchmarks');
     return res.json();
+  },
+
+  // --- Differentiating Intelligence API Helpers ---
+  async challengeAdvice({ topic, claim = '' }) {
+    const res = await fetch(`${API_BASE}/challenge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, claim }),
+    });
+    if (!res.ok) throw new Error('Challenge request failed');
+    return res.json();
+  },
+
+  async applyContext({ topic, company_type = 'B2B SaaS', users = '15,000', activation = '18%', problem = '', constraints = '' }) {
+    const res = await fetch(`${API_BASE}/apply-context`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, company_type, users, activation, problem, constraints }),
+    });
+    if (!res.ok) throw new Error('Apply context request failed');
+    return res.json();
+  },
+
+  async generateDecision({ decision_question, options = ["Option A", "Option B"], constraints = '' }) {
+    const res = await fetch(`${API_BASE}/decisions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decision_question, options, constraints }),
+    });
+    if (!res.ok) throw new Error('Decision memo generation failed');
+    return res.json();
+  },
+
+  async generateExperiment({ problem, primary_metric = 'Activation Rate', hypothesis = '' }) {
+    const res = await fetch(`${API_BASE}/experiments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ problem, primary_metric, hypothesis }),
+    });
+    if (!res.ok) throw new Error('Experiment generation failed');
+    return res.json();
+  },
+
+  async buildFramework({ concept }) {
+    const res = await fetch(`${API_BASE}/frameworks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ concept }),
+    });
+    if (!res.ok) throw new Error('Framework generation failed');
+    return res.json();
+  },
+
+  async compareGuests({ topic, guest_names = null }) {
+    const res = await fetch(`${API_BASE}/compare-guests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, guest_names }),
+    });
+    if (!res.ok) throw new Error('Compare guests request failed');
+    return res.json();
+  },
+
+  async getKnowledgeGraph() {
+    const res = await fetch(`${API_BASE}/knowledge-graph`);
+    if (!res.ok) throw new Error('Failed to fetch knowledge graph');
+    return res.json();
+  },
+
+  async evaluatePMFDiagnostic(signals = {}) {
+    const res = await fetch(`${API_BASE}/pmf-diagnostic`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(signals),
+    });
+    if (!res.ok) throw new Error('Failed to evaluate PMF diagnostic');
+    return res.json();
+  },
+
+  async verifyEssayGrounding(essay_text) {
+    const res = await fetch(`${API_BASE}/writing/verify-grounding`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ essay_text }),
+    });
+    if (!res.ok) throw new Error('Failed to verify grounding');
+    return res.json();
   }
 };
+
 

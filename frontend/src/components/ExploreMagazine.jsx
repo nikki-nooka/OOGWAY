@@ -8,15 +8,20 @@ import {
   PenTool, 
   TrendingUp, 
   X, 
-  Layers 
+  Layers,
+  Network,
+  Sliders
 } from 'lucide-react';
 import { api } from '../services/api';
+import KnowledgeGraphView from './KnowledgeGraphView';
+import PMFDiagnosticView from './PMFDiagnosticView';
 
 export default function ExploreMagazine({ 
   onStartChat, 
   onOpenWritingTopic,
   selectedTopicId = null
 }) {
+  const [subView, setSubView] = useState('topics'); // 'topics' | 'graph' | 'pmf'
   const [topics, setTopics] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,236 +71,299 @@ export default function ExploreMagazine({
   });
 
   return (
-    <div className="home-container">
-      {/* Editorial Header */}
-      <div style={{ marginBottom: '32px', borderBottom: '1px solid var(--border-medium)', paddingBottom: '24px' }}>
-        <span className="tag-category tag-brown" style={{ marginBottom: '8px' }}>
-          Knowledge Explorer
-        </span>
-        <h1 className="font-display" style={{ fontSize: '36px', color: 'var(--text-primary)', marginTop: '6px' }}>
-          The Lenny Growth Magazine & Playbooks
-        </h1>
-        <p style={{ fontSize: '15.5px', color: 'var(--text-secondary)', maxWidth: '700px', marginTop: '6px' }}>
-          Curated mental models, frameworks, and verbatim transcripts from top product executives, founders, and growth operators.
-        </p>
-
-        {/* Search & Category Filter */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '24px' }}>
-          <div style={{
-            display: 'flex',
+    <div>
+      {/* Sub-Navigation Switcher */}
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '1.25rem 1.5rem 0 1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        borderBottom: '1px solid var(--border-subtle)'
+      }}>
+        <button
+          onClick={() => setSubView('topics')}
+          style={{
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '10px',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-medium)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '10px 16px',
-            maxWidth: '540px'
-          }}>
-            <Search size={16} color="var(--text-muted)" />
-            <input 
-              type="text"
-              placeholder="Search topics, frameworks, or guests (e.g. Gustaf, Sean Ellis, LNO, Chesky)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: 'var(--text-primary)',
-                width: '100%',
-                fontSize: '14px'
-              }}
-            />
-          </div>
+            gap: '0.5rem',
+            padding: '0.65rem 1.25rem',
+            border: 'none',
+            borderBottom: subView === 'topics' ? '2.5px solid var(--accent-primary)' : '2.5px solid transparent',
+            background: 'transparent',
+            color: subView === 'topics' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: subView === 'topics' ? 700 : 500,
+            fontSize: '0.95rem',
+            cursor: 'pointer'
+          }}
+        >
+          <Layers size={16} color={subView === 'topics' ? 'var(--accent-primary)' : 'var(--text-muted)'} />
+          <span>Curated Playbooks & Topics</span>
+        </button>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {categories.map(cat => (
-              <button 
-                key={cat}
-                className={`tag-category ${activeCategory === cat ? 'tag-brown' : 'tag-neutral'}`}
-                style={{ cursor: 'pointer', padding: '6px 12px', fontSize: '12px' }}
-                onClick={() => setActiveCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
+        <button
+          onClick={() => setSubView('graph')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.65rem 1.25rem',
+            border: 'none',
+            borderBottom: subView === 'graph' ? '2.5px solid var(--accent-primary)' : '2.5px solid transparent',
+            background: 'transparent',
+            color: subView === 'graph' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: subView === 'graph' ? 700 : 500,
+            fontSize: '0.95rem',
+            cursor: 'pointer'
+          }}
+        >
+          <Network size={16} color={subView === 'graph' ? 'var(--accent-primary)' : 'var(--text-muted)'} />
+          <span>Knowledge Graph</span>
+        </button>
+
+        <button
+          onClick={() => setSubView('pmf')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.65rem 1.25rem',
+            border: 'none',
+            borderBottom: subView === 'pmf' ? '2.5px solid var(--accent-primary)' : '2.5px solid transparent',
+            background: 'transparent',
+            color: subView === 'pmf' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: subView === 'pmf' ? 700 : 500,
+            fontSize: '0.95rem',
+            cursor: 'pointer'
+          }}
+        >
+          <Sliders size={16} color={subView === 'pmf' ? 'var(--accent-primary)' : 'var(--text-muted)'} />
+          <span>PMF Diagnostic Engine</span>
+        </button>
       </div>
 
-      {/* Topics Grid */}
-      <div className="explore-grid">
-        {filteredTopics.map((t) => (
-          <div 
-            key={t.id}
-            className="explore-card"
-            onClick={() => handleSelectTopic(t.id)}
-          >
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span className="tag-category tag-brown">{t.category}</span>
-                <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-                  {t.chunk_count}+ Chunks
-                </span>
-              </div>
+      {/* Render selected Sub-View */}
+      {subView === 'graph' && (
+        <KnowledgeGraphView onStartChat={onStartChat} />
+      )}
 
-              <h2 className="explore-card-title">{t.title}</h2>
-              <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '16px' }}>
-                {t.description}
-              </p>
+      {subView === 'pmf' && (
+        <PMFDiagnosticView onStartChat={onStartChat} />
+      )}
 
-              {/* Guests */}
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 700 }}>
-                  Key Operators & Guests:
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                  {t.top_guests.map((g, idx) => (
-                    <span key={idx} style={{ 
-                      fontSize: '12px', 
-                      backgroundColor: 'var(--bg-app)', 
-                      border: '1px solid var(--border-subtle)', 
-                      padding: '2px 8px', 
-                      borderRadius: 'var(--radius-xs)',
-                      fontWeight: 500
-                    }}>
-                      {g}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Key Frameworks */}
-              <div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 700 }}>
-                  Featured Frameworks:
-                </div>
-                <ul style={{ fontSize: '12.5px', color: 'var(--text-secondary)', paddingLeft: '16px', lineHeight: 1.5 }}>
-                  {t.frameworks.slice(0, 3).map((f, idx) => (
-                    <li key={idx}>{f}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div style={{ marginTop: '20px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                Explore Playbook <ArrowRight size={13} />
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Topic Detail Modal (Screen 03) */}
-      {activeTopicDetail && (
-        <div className="modal-overlay" onClick={() => setActiveTopicDetail(null)}>
-          <div className="modal-content-card" style={{ maxWidth: '780px' }} onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setActiveTopicDetail(null)}>
-              <X size={18} />
-            </button>
-
+      {subView === 'topics' && (
+        <div className="home-container" style={{ paddingTop: '1.5rem' }}>
+          {/* Editorial Header */}
+          <div style={{ marginBottom: '32px', borderBottom: '1px solid var(--border-medium)', paddingBottom: '24px' }}>
             <span className="tag-category tag-brown" style={{ marginBottom: '8px' }}>
-              {activeTopicDetail.category}
+              Knowledge Explorer
             </span>
-
-            <h2 className="font-display" style={{ fontSize: '28px', color: 'var(--text-primary)', marginTop: '4px', marginBottom: '12px' }}>
-              {activeTopicDetail.title}
-            </h2>
-
-            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '20px' }}>
-              {activeTopicDetail.description}
+            <h1 className="font-display" style={{ fontSize: '36px', color: 'var(--text-primary)', marginTop: '6px' }}>
+              The Lenny Growth Magazine & Playbooks
+            </h1>
+            <p style={{ fontSize: '15.5px', color: 'var(--text-secondary)', maxWidth: '700px', marginTop: '6px' }}>
+              Curated mental models, frameworks, and verbatim transcripts from top product executives, founders, and growth operators.
             </p>
 
-            {/* Actions: Start Chat / Write Essay */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
-              <button 
-                className="btn btn-primary"
-                onClick={() => {
-                  onStartChat(activeTopicDetail.sample_questions[0] || `Explain ${activeTopicDetail.title}`);
-                  setActiveTopicDetail(null);
-                }}
-              >
-                <Sparkles size={14} />
-                <span>Ask Lenny about {activeTopicDetail.title.split('&')[0].trim()}</span>
-              </button>
+            {/* Filter and Search Toolbar */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '24px', alignItems: 'center', justifyContent: 'space-between' }}>
+              {/* Categories */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`btn ${activeCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '12.5px', padding: '6px 14px', borderRadius: '20px' }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
 
-              <button 
-                className="btn btn-accent-green"
-                onClick={() => {
-                  onOpenWritingTopic(activeTopicDetail.title);
-                  setActiveTopicDetail(null);
-                }}
-              >
-                <PenTool size={14} />
-                <span>Write Ship 30 Essay</span>
-              </button>
+              {/* Search Bar */}
+              <div style={{ position: 'relative', width: '260px' }}>
+                <Search size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '10px' }} />
+                <input
+                  type="text"
+                  placeholder="Filter frameworks, guests..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px 8px 36px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--border-medium)',
+                    backgroundColor: 'var(--bg-app)',
+                    color: 'var(--text-primary)',
+                    fontSize: '13px'
+                  }}
+                />
+              </div>
             </div>
+          </div>
 
-            <hr className="editorial-rule" />
+          {/* Topics Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+            {filteredTopics.map(topic => (
+              <div 
+                key={topic.id}
+                className="card"
+                style={{ 
+                  padding: '24px', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--bg-surface)'
+                }}
+                onClick={() => handleSelectTopic(topic.id)}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span className="tag-category tag-brown" style={{ fontSize: '11px' }}>
+                      {topic.category}
+                    </span>
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                      {topic.chunk_count} evidence chunks
+                    </span>
+                  </div>
 
-            {/* Popular Questions */}
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '12px', fontWeight: 700 }}>
-                Popular Grounded Questions:
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {activeTopicDetail.sample_questions.map((q, idx) => (
-                  <div 
-                    key={idx}
-                    style={{
-                      padding: '10px 14px',
-                      backgroundColor: 'var(--bg-app)',
-                      border: '1px solid var(--border-medium)',
-                      borderRadius: 'var(--radius-xs)',
-                      fontSize: '13.5px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
+                  <h3 className="font-display" style={{ fontSize: '20px', color: 'var(--text-primary)', marginBottom: '10px' }}>
+                    {topic.title}
+                  </h3>
+
+                  <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '16px' }}>
+                    {topic.description}
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
+                    {topic.top_guests.slice(0, 3).map((guest, i) => (
+                      <span key={i} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'var(--bg-highlight)', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                        {guest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '14px' }}>
+                  <button 
+                    className="btn btn-ghost" 
+                    style={{ fontSize: '12.5px', padding: '4px 8px', color: 'var(--accent-primary)' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectTopic(topic.id);
                     }}
+                  >
+                    <span>Read Deep Dive</span>
+                    <ArrowRight size={13} />
+                  </button>
+
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ fontSize: '12px', padding: '4px 10px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStartChat(`Tell me about ${topic.title} and what top guests like ${topic.top_guests.join(', ')} recommend.`);
+                    }}
+                  >
+                    <Sparkles size={12} color="var(--accent-primary)" />
+                    <span>Ask Lenny</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Topic Detail Modal */}
+          {activeTopicDetail && (
+            <div className="modal-overlay" onClick={() => setActiveTopicDetail(null)}>
+              <div className="modal-content-card" style={{ maxWidth: '750px', maxHeight: '85vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close-btn" onClick={() => setActiveTopicDetail(null)}>
+                  <X size={18} />
+                </button>
+
+                <span className="tag-category tag-brown" style={{ marginBottom: '8px' }}>
+                  {activeTopicDetail.category}
+                </span>
+
+                <h2 className="font-display" style={{ fontSize: '28px', color: 'var(--text-primary)', marginTop: '4px', marginBottom: '12px' }}>
+                  {activeTopicDetail.title}
+                </h2>
+
+                <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>
+                  {activeTopicDetail.description}
+                </p>
+
+                {/* Frameworks Section */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h4 style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                    Core Frameworks & Mental Models
+                  </h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {activeTopicDetail.frameworks.map((fw, i) => (
+                      <div key={i} style={{ padding: '8px 12px', backgroundColor: 'var(--bg-app)', border: '1px solid var(--border-medium)', borderRadius: '6px', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>
+                        📐 {fw}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Evidence Passages */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h4 style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                    Transcript Evidence & Citations ({activeTopicDetail.citations?.length || 0})
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {activeTopicDetail.citations?.map((cit, idx) => (
+                      <div key={idx} style={{ padding: '12px 16px', backgroundColor: 'var(--bg-app)', borderLeft: '3px solid var(--accent-primary)', borderRadius: '0 6px 6px 0', fontSize: '13px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{cit.guest}</span>
+                          <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{cit.timestamp}</span>
+                        </div>
+                        <div style={{ color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: '6px' }}>
+                          "{cit.quote}"
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                          Episode: {cit.episode_title}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid var(--border-medium)', paddingTop: '16px' }}>
+                  <button 
+                    className="btn btn-primary" 
+                    style={{ flex: 1, padding: '10px' }}
                     onClick={() => {
-                      onStartChat(q);
+                      onStartChat(`Explain the core lessons and frameworks for ${activeTopicDetail.title}`);
                       setActiveTopicDetail(null);
                     }}
                   >
-                    <span>{q}</span>
-                    <ArrowRight size={13} color="var(--accent-primary)" />
-                  </div>
-                ))}
-              </div>
-            </div>
+                    <Sparkles size={15} />
+                    <span>Open in Discussion Chat</span>
+                  </button>
 
-            {/* Verbatim Evidence Samples */}
-            {activeTopicDetail.evidence_samples && activeTopicDetail.evidence_samples.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '12px', fontWeight: 700 }}>
-                  Verbatim Transcript Quotes & Citations:
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {activeTopicDetail.evidence_samples.map((ev, idx) => (
-                    <div key={idx} className="source-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span className="source-guest">{ev.guest}</span>
-                        <span className="source-timestamp">{ev.timestamp}</span>
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                        {ev.episode_title}
-                      </div>
-                      <blockquote className="source-quote">
-                        "{ev.quote}"
-                      </blockquote>
-                      {ev.source_url && (
-                        <a href={ev.source_url} target="_blank" rel="noreferrer" className="source-link">
-                          <span>Listen to verbatim segment →</span>
-                        </a>
-                      )}
-                    </div>
-                  ))}
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ flex: 1, padding: '10px' }}
+                    onClick={() => {
+                      onOpenWritingTopic(activeTopicDetail.title);
+                      setActiveTopicDetail(null);
+                    }}
+                  >
+                    <PenTool size={15} />
+                    <span>Generate Ship 30 Essay</span>
+                  </button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

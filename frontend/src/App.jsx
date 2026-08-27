@@ -13,6 +13,9 @@ import SourceDrawer from './components/SourceDrawer';
 import SettingsModal from './components/SettingsModal';
 import KnowledgeBaseModal from './components/KnowledgeBaseModal';
 import EpisodeDetailModal from './components/EpisodeDetailModal';
+import ContextApplicationModal from './components/ContextApplicationModal';
+import DecisionModeModal from './components/DecisionModeModal';
+
 
 export default function App() {
   // Navigation & View State
@@ -37,12 +40,16 @@ export default function App() {
   const [activeCitation, setActiveCitation] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(false);
+  const [isContextModalOpen, setIsContextModalOpen] = useState(false);
+  const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
+  const [contextActionTopic, setContextActionTopic] = useState('Growth & PMF');
   const [activeEpisodeId, setActiveEpisodeId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   // Context pass-through for Writing Studio & Explore
   const [writingInitialTopic, setWritingInitialTopic] = useState('');
   const [exploreSelectedTopic, setExploreSelectedTopic] = useState(null);
+
 
   // Initialize theme on html element
   useEffect(() => {
@@ -220,7 +227,7 @@ export default function App() {
     }
   };
 
-  // Cross-Tab Navigation Helpers
+  // Cross-Tab Navigation & Action Helpers
   const handleStartChatWithPrompt = (promptText) => {
     setActiveTab('chat');
     handleSendMessage(promptText);
@@ -236,6 +243,52 @@ export default function App() {
     setActiveTab('explore');
   };
 
+  const handleActionTrigger = async (actionType, messageText) => {
+    // Extract topic from message
+    const cleanTopic = messageText.slice(0, 80).replace(/[#*`]/g, '').trim();
+
+    if (actionType === 'challenge') {
+      handleSendMessage(`⚡ Challenge this advice: What are the failure modes, counterpoints, and alternative guest models for: "${cleanTopic}"?`);
+    } else if (actionType === 'apply-context') {
+      setContextActionTopic(cleanTopic);
+      setIsContextModalOpen(true);
+    } else if (actionType === 'decision') {
+      setIsDecisionModalOpen(true);
+    } else if (actionType === 'experiment') {
+      handleSendMessage(`🧪 Generate an Experiment Brief with hypothesis, sample size, primary metrics, and 7-day retention guardrails for solving: "${cleanTopic}"`);
+    } else if (actionType === 'framework') {
+      handleSendMessage(`📐 Build a visual strategic mental model framework and ASCII diagram for: "${cleanTopic}"`);
+    } else if (actionType === 'ship30') {
+      handleOpenWritingWithTopic(cleanTopic);
+    }
+  };
+
+  const handleApplyContextResult = (result) => {
+    // Post synthesized playbook into active chat session
+    const synthesizedContent = `### 🎯 Tailored Playbook for Your Context\n\n**Situation:** ${result.situation_summary}\n\n#### 🔑 Core Principles:\n${result.core_principles.map(p => `- ${p}`).join('\n')}\n\n#### 📋 Recommended Step-by-Step Actions:\n${result.recommended_actions.map(a => `1. **${a.phase}: ${a.action}**\n   - *Rationale:* ${a.rationale}\n   - *Evidence:* Grounded in principles from **${a.evidence_ref}**`).join('\n\n')}\n\n#### ⚠️ Pre-Mortem Guardrails:\n${result.key_risks.map(r => `- ${r}`).join('\n')}`;
+    
+    setMessages(prev => [...prev, {
+      id: `ctx-${Date.now()}`,
+      role: 'assistant',
+      content: synthesizedContent,
+      citations: result.citations || [],
+      model_used: 'Context Engine',
+      created_at: new Date().toISOString()
+    }]);
+  };
+
+  const handleDecisionResult = (result) => {
+    // Open generated decision memo in artifact split viewer
+    const newArt = {
+      id: result.artifact_id || `memo-${Date.now()}`,
+      title: result.title,
+      artifact_type: 'markdown',
+      content: result.artifact_content
+    };
+    setActiveArtifact(newArt);
+    setActiveTab('chat');
+  };
+
   const handleTabSelect = (tabKey) => {
     if (tabKey === 'chat_new') {
       handleNewSession();
@@ -245,6 +298,7 @@ export default function App() {
       setActiveTab(tabKey);
     }
   };
+
 
   return (
     <div className="app-viewport">
@@ -310,6 +364,7 @@ export default function App() {
               onOpenCitation={(cit) => setActiveCitation(cit)}
               onOpenArtifact={(art) => setActiveArtifact(art)}
               onOpenKnowledgeBase={() => setIsKnowledgeBaseOpen(true)}
+              onActionTrigger={handleActionTrigger}
               activeArtifact={activeArtifact}
               theme={theme}
               onToggleTheme={toggleTheme}
@@ -352,8 +407,6 @@ export default function App() {
         )}
       </main>
 
-
-
       {/* Slide-over Source Drawer (Screen 05) */}
       <SourceDrawer 
         citation={activeCitation}
@@ -364,6 +417,21 @@ export default function App() {
       <KnowledgeBaseModal 
         isOpen={isKnowledgeBaseOpen}
         onClose={() => setIsKnowledgeBaseOpen(false)}
+      />
+
+      {/* Context Application Modal */}
+      <ContextApplicationModal 
+        isOpen={isContextModalOpen}
+        onClose={() => setIsContextModalOpen(false)}
+        topic={contextActionTopic}
+        onApplyContextResult={handleApplyContextResult}
+      />
+
+      {/* Decision Mode Modal */}
+      <DecisionModeModal 
+        isOpen={isDecisionModalOpen}
+        onClose={() => setIsDecisionModalOpen(false)}
+        onDecisionResult={handleDecisionResult}
       />
 
       {/* Episode Detail Modal (Screen 04 & 05) */}
@@ -388,3 +456,4 @@ export default function App() {
     </div>
   );
 }
+

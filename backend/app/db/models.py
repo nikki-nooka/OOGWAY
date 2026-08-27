@@ -41,7 +41,7 @@ class ArtifactModel(Base):
     __tablename__ = "artifacts"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    session_id = Column(String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    session_id = Column(String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=True, index=True)
     message_id = Column(String(36), nullable=True)
     title = Column(String(255), nullable=False)
     artifact_type = Column(String(50), nullable=False) # 'html', 'markdown', 'css', 'react'
@@ -50,3 +50,4 @@ class ArtifactModel(Base):
     created_at = Column(DateTime(timezone=True), default=utc_now)
 
     session = relationship("SessionModel", back_populates="artifacts")
+

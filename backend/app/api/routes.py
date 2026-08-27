@@ -11,13 +11,17 @@ from app.api.schemas import (
     ChatRequest, ChatResponse,
     SessionCreate, SessionSummary, SessionDetail, MessageDetail, ArtifactSchema,
     WritingRequest, WritingResponse, ArtifactCreateRequest, TopicSummary,
-    ModelSwitchRequest, HealthStatus
+    ModelSwitchRequest, HealthStatus,
+    ChallengeRequest, ApplyContextRequest, DecisionMemoRequest, ExperimentBriefRequest,
+    FrameworkRequest, CompareGuestsRequest, PMFDiagnosticRequest, VerifyGroundingRequest
 )
 from app.engine.agent import agent_orchestrator
 from app.engine.rag import rag_engine
 from app.engine.llm_provider import LLMFactory
 from app.engine.ship30_skill import ship30_skill
+from app.engine.intelligence_engine import intelligence_engine
 from app.core.config import settings
+
 
 router = APIRouter()
 
@@ -655,4 +659,145 @@ async def get_system_benchmarks():
             }
         ]
     }
+
+# --- Differentiating Intelligence Endpoints ---
+
+@router.post("/challenge")
+async def challenge_advice_endpoint(req: ChallengeRequest):
+    """
+    Challenge Lenny's advice: Surfaces counterpoints, failure conditions,
+    and alternative guest models from the transcript repository.
+    """
+    return intelligence_engine.challenge_advice(topic=req.topic, claim=req.claim or "")
+
+@router.post("/apply-context")
+async def apply_context_endpoint(req: ApplyContextRequest):
+    """
+    Applies user company context (metrics, constraints, problem) to Lenny's principles.
+    """
+    ctx = {
+        "company_type": req.company_type,
+        "users": req.users,
+        "activation": req.activation,
+        "problem": req.problem,
+        "constraints": req.constraints
+    }
+    return intelligence_engine.apply_context(context=ctx, topic=req.topic)
+
+async def _get_or_create_default_session(db: AsyncSession) -> str:
+    stmt = select(SessionModel).limit(1)
+    res = await db.execute(stmt)
+    sess = res.scalars().first()
+    if not sess:
+        sess = SessionModel(title="Executive Workspace", model_provider="ollama")
+        db.add(sess)
+        await db.commit()
+        await db.refresh(sess)
+    return sess.id
+
+@router.post("/decisions")
+async def generate_decision_endpoint(req: DecisionMemoRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Generates a structured Decision Memo comparing Option A vs Option B with strengths, risks, and transcript evidence.
+    """
+    memo_data = intelligence_engine.generate_decision_memo(
+        decision_question=req.decision_question,
+        options=req.options,
+        constraints=req.constraints or ""
+    )
+    sess_id = await _get_or_create_default_session(db)
+    new_art = ArtifactModel(
+        session_id=sess_id,
+        title=memo_data["title"],
+        artifact_type="markdown",
+        content=memo_data["artifact_content"],
+        meta={"type": "decision_memo", "question": req.decision_question}
+    )
+    db.add(new_art)
+    await db.commit()
+    await db.refresh(new_art)
+    memo_data["artifact_id"] = new_art.id
+    return memo_data
+
+@router.post("/experiments")
+async def generate_experiment_endpoint(req: ExperimentBriefRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Generates an Experiment Brief with hypothesis, sample size, primary metrics, and guardrails.
+    """
+    exp_data = intelligence_engine.generate_experiment_brief(
+        problem=req.problem,
+        metric=req.primary_metric or "Activation Rate",
+        hypothesis=req.hypothesis or ""
+    )
+    sess_id = await _get_or_create_default_session(db)
+    new_art = ArtifactModel(
+        session_id=sess_id,
+        title=exp_data["title"],
+        artifact_type="markdown",
+        content=exp_data["artifact_content"],
+        meta={"type": "experiment_brief", "metric": req.primary_metric}
+    )
+    db.add(new_art)
+    await db.commit()
+    await db.refresh(new_art)
+    exp_data["artifact_id"] = new_art.id
+    return exp_data
+
+@router.post("/frameworks")
+async def build_framework_endpoint(req: FrameworkRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Generates a visual ASCII/Markdown mental model hierarchy framework.
+    """
+    fw_data = intelligence_engine.build_framework(concept=req.concept)
+    sess_id = await _get_or_create_default_session(db)
+    new_art = ArtifactModel(
+        session_id=sess_id,
+        title=f"{req.concept} Framework",
+        artifact_type="markdown",
+        content=fw_data["artifact_content"],
+        meta={"type": "framework", "concept": req.concept}
+    )
+    db.add(new_art)
+    await db.commit()
+    await db.refresh(new_art)
+    fw_data["artifact_id"] = new_art.id
+    return fw_data
+
+
+@router.post("/compare-guests")
+async def compare_guests_endpoint(req: CompareGuestsRequest):
+    """
+    Compares differing guest methodologies on a topic (Consensus vs Disagreement).
+    """
+    return intelligence_engine.compare_guests(topic=req.topic, guest_names=req.guest_names)
+
+@router.get("/knowledge-graph")
+async def get_knowledge_graph_endpoint():
+    """
+    Returns relational knowledge graph nodes and edges across 279 episodes.
+    """
+    return intelligence_engine.get_knowledge_graph()
+
+@router.post("/pmf-diagnostic")
+async def evaluate_pmf_diagnostic_endpoint(req: PMFDiagnosticRequest):
+    """
+    Evaluates an interactive, transparent PMF score based on 6 core telemetry signals.
+    """
+    signals = {
+        "retention": req.retention,
+        "activation": req.activation,
+        "repeat_usage": req.repeat_usage,
+        "referral": req.referral,
+        "willingness_to_pay": req.willingness_to_pay,
+        "usage_frequency": req.usage_frequency
+    }
+    return intelligence_engine.evaluate_pmf_diagnostic(signals=signals)
+
+@router.post("/writing/verify-grounding")
+async def verify_essay_grounding_endpoint(req: VerifyGroundingRequest):
+    """
+    Evaluates claims in an essay against 4,389 transcript chunks, returning claim verification counts.
+    """
+    return intelligence_engine.verify_essay_grounding(essay_text=req.essay_text)
+
 

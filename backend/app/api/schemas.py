@@ -110,3 +110,45 @@ class HealthStatus(BaseModel):
     episodes_count: int
     active_model: str
 
+# --- Differentiating Intelligence Schemas ---
+class ChallengeRequest(BaseModel):
+    topic: str
+    claim: Optional[str] = ""
+
+class ApplyContextRequest(BaseModel):
+    topic: str
+    company_type: Optional[str] = "B2B SaaS"
+    users: Optional[str] = "15,000"
+    activation: Optional[str] = "18%"
+    problem: Optional[str] = "Weak onboarding & drop-off"
+    constraints: Optional[str] = "Small engineering team"
+
+class DecisionMemoRequest(BaseModel):
+    decision_question: str
+    options: List[str] = Field(default_factory=lambda: ["Option A", "Option B"])
+    constraints: Optional[str] = ""
+
+class ExperimentBriefRequest(BaseModel):
+    problem: str
+    primary_metric: Optional[str] = "Activation Rate"
+    hypothesis: Optional[str] = ""
+
+class FrameworkRequest(BaseModel):
+    concept: str
+
+class CompareGuestsRequest(BaseModel):
+    topic: str
+    guest_names: Optional[List[str]] = None
+
+class PMFDiagnosticRequest(BaseModel):
+    retention: Optional[float] = 0.65
+    activation: Optional[float] = 0.50
+    repeat_usage: Optional[float] = 0.60
+    referral: Optional[float] = 0.40
+    willingness_to_pay: Optional[float] = 0.70
+    usage_frequency: Optional[float] = 0.55
+
+class VerifyGroundingRequest(BaseModel):
+    essay_text: str
+
+

@@ -23,6 +23,7 @@ export default function ChatArea({
   onOpenCitation,
   onOpenArtifact,
   onOpenKnowledgeBase,
+  onActionTrigger,
   activeArtifact,
   theme,
   onToggleTheme,
@@ -130,6 +131,7 @@ export default function ChatArea({
                 message={msg}
                 onOpenCitation={onOpenCitation}
                 onOpenArtifact={onOpenArtifact}
+                onActionTrigger={onActionTrigger}
               />
             ))
           )}
