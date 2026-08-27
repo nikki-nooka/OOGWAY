@@ -199,14 +199,34 @@ npm run dev -- --port 3000 --host 127.0.0.1
 
 ---
 
-## 🦙 6. Local Ollama Setup (Mandatory for Demo)
+## 🤖 6. AI Model Providers & Exact Configurations
+
+The application implements a decoupled `BaseLLMProvider` abstraction layer supporting 4 model options:
+
+| Provider Mode | Exact Model Identifier | Configuration Variable | Endpoint & Characteristics |
+| :--- | :--- | :--- | :--- |
+| **🦙 Local Ollama (Mandatory Demo)** | `llama3.2` (or `llama3.1`) | `OLLAMA_MODEL=llama3.2` | `http://localhost:11434/api/chat` • Runs 100% locally with zero cloud API keys. |
+| **🟣 Anthropic Claude** | `claude-3-5-sonnet-20241022` | `ANTHROPIC_MODEL=claude-3-5-sonnet-20241022` | `https://api.anthropic.com/v1/messages` • High-end reasoning and markdown structuring. |
+| **🟢 OpenAI** | `gpt-4o` | `OPENAI_MODEL=gpt-4o` | `https://api.openai.com/v1/chat/completions` • Fast multimodal reasoning & code generation. |
+| **⚡ Offline Grounded Engine** | `grounded_offline_engine` | `DEFAULT_LLM_PROVIDER=mock` | Embedded pure-Python deterministic synthesizer utilizing real BM25 transcript chunks (zero API setup / 100% offline). |
+
+### 6.1 Local Ollama Setup
 1. Install [Ollama](https://ollama.com/) and start the daemon: `ollama serve`
 2. Pull the recommended local model:
    ```bash
    ollama pull llama3.2
    ```
-3. The application automatically detects Ollama at `http://localhost:11434`.
-4. **Built-in Offline Engine:** If Ollama is offline or uninstalled, the platform automatically switches to the **Built-in Grounded Engine**, enabling 100% of the UI, RAG citations, Ship 30 essays, and interactive artifacts to work seamlessly without errors.
+3. The application automatically connects via `http://localhost:11434`.
+
+### 6.2 Cloud LLM Configuration (Optional)
+Add your keys to `backend/.env`:
+```env
+ANTHROPIC_API_KEY=sk-ant-api03-...
+OPENAI_API_KEY=sk-proj-...
+```
+
+### 6.3 Zero-Crash Fallback Guarantee
+If an evaluator has no local Ollama installed and no cloud API keys, the system **never throws a 500 error**; it automatically activates the **Built-in Offline Grounded Engine**, ensuring 100% of the UI, transcript search, citations, audio timestamps, Ship 30 essays, and interactive HTML split-screen work immediately without errors.
 
 ---
 
