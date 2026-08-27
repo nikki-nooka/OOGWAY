@@ -308,3 +308,67 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-dark);
 }
+
+/* Modal and Element Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Universal Responsive Adaptations */
+@media (max-width: 900px) {
+  :root {
+    --header-height: 56px;
+  }
+  
+  .navbar-editorial {
+    padding: 0 16px;
+  }
+  
+  .nav-links {
+    gap: 2px;
+  }
+  
+  .nav-tab {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-tab span {
+    display: none;
+  }
+  
+  .nav-tab {
+    padding: 8px;
+  }
+  
+  .modal-content-card {
+    padding: 20px;
+    max-height: 94vh;
+  }
+}
+
