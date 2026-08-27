@@ -151,5 +151,12 @@ export const api = {
     const res = await fetch(`${API_BASE}/health`);
     if (!res.ok) throw new Error('Failed health check');
     return res.json();
+  },
+
+  async getBenchmarks() {
+    const res = await fetch(`${API_BASE}/benchmarks`);
+    if (!res.ok) throw new Error('Failed to fetch benchmarks');
+    return res.json();
   }
 };
+

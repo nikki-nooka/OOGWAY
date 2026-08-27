@@ -13,10 +13,11 @@ import SourceDrawer from './components/SourceDrawer';
 import SettingsModal from './components/SettingsModal';
 import KnowledgeBaseModal from './components/KnowledgeBaseModal';
 import EpisodeDetailModal from './components/EpisodeDetailModal';
+import BenchmarkDashboard from './components/BenchmarkDashboard';
 
 export default function App() {
   // Navigation & View State
-  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'explore' | 'chat' | 'writing' | 'artifacts' | 'slides' | 'sources'
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'explore' | 'chat' | 'writing' | 'artifacts' | 'slides' | 'sources' | 'benchmarks'
   
   // Data State
   const [sessions, setSessions] = useState([]);
@@ -349,7 +350,16 @@ export default function App() {
         {activeTab === 'slides' && (
           <PresentationDeck />
         )}
+
+        {/* Screen 18: Live System & Quality Benchmarks */}
+        {activeTab === 'benchmarks' && (
+          <BenchmarkDashboard 
+            onBackToHome={() => setActiveTab('home')}
+            onOpenAsk={() => setActiveTab('chat')}
+          />
+        )}
       </main>
+
 
       {/* Slide-over Source Drawer (Screen 05) */}
       <SourceDrawer 

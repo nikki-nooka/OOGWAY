@@ -10,8 +10,10 @@ import {
   Moon, 
   Settings, 
   Sparkles,
-  Search
+  Search,
+  BarChart2
 } from 'lucide-react';
+
 
 export default function Navbar({ 
   activeTab, 
@@ -92,7 +94,16 @@ export default function Navbar({
           <BookOpen size={14} />
           <span>Sources</span>
         </button>
+
+        <button 
+          className={`nav-tab ${activeTab === 'benchmarks' ? 'active' : ''}`}
+          onClick={() => onSelectTab('benchmarks')}
+        >
+          <BarChart2 size={14} />
+          <span>Benchmarks</span>
+        </button>
       </nav>
+
 
       {/* Right Controls: Model Status, Search, Theme, Settings */}
       <div className="nav-actions">
