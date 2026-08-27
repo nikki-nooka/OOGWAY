@@ -3,42 +3,74 @@
 > **AI-Powered Product & Strategy Intelligence Platform Grounded in Transcripts from *Lenny's Podcast*.**  
 > *Full-stack conversational assistant, Ship 30 writing studio, and interactive artifact viewer built with FastAPI, React 18, and PostgreSQL/SQLite.*
 
+<div align="center">
+
 [![Public GitHub](https://img.shields.io/badge/GitHub-OOGWAY-181717?style=for-the-badge&logo=github)](https://github.com/nikki-nooka/OOGWAY)
+[![CI Pipeline](https://img.shields.io/badge/CI%20Pipeline-Passing-22c55e?style=for-the-badge&logo=githubactions)](https://github.com/nikki-nooka/OOGWAY/actions)
 [![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube%20Walkthrough-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=K3OxMGg3kC8)
-[![Automated Tests](https://img.shields.io/badge/pytest-26%2F26%20Passed%20(100%25)-22c55e?style=for-the-badge&logo=pytest)](backend/tests/)
+[![Automated Tests](https://img.shields.io/badge/pytest-50%2F50%20Passed%20(100%25)-22c55e?style=for-the-badge&logo=pytest)](backend/tests/)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-blue?style=for-the-badge&logo=github)](https://github.com/nikki-nooka/OOGWAY/releases)
 [![Model Providers](https://img.shields.io/badge/Models-Ollama%20%7C%20Claude%20%7C%20OpenAI%20%7C%20Offline-6366f1?style=for-the-badge&logo=anthropic)](backend/app/engine/llm_provider.py)
-[![Backend](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](backend/)
-[![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61dafb?style=for-the-badge&logo=react)](frontend/)
-[![Database](https://img.shields.io/badge/Database-PostgreSQL%20%7C%20SQLite%20Async-f97316?style=for-the-badge&logo=postgresql)](backend/app/db/)
+
+</div>
+
+---
+
+<div align="center">
+
+### 🗺️ Quick Navigation
+
+[![Overview](https://img.shields.io/badge/📌-Overview-2B5C7D?style=flat-square)](#-project-overview)
+[![Demo Video](https://img.shields.io/badge/🎥-Demo_Video-FF0000?style=flat-square)](#-demo-video-walkthrough)
+[![Features](https://img.shields.io/badge/✨-Features-245D55?style=flat-square)](#-core-features-built--verified)
+[![Architecture](https://img.shields.io/badge/🏗️-Architecture-9A5B2E?style=flat-square)](#-system-architecture)
+[![Quickstart](https://img.shields.io/badge/🚀-Quickstart-D7A94B?style=flat-square)](#-quickstart--one-command-run-guide)
+[![Models](https://img.shields.io/badge/🤖-Models-6366f1?style=flat-square)](#-local-ollama--model-setup)
+[![API](https://img.shields.io/badge/📡-API_Reference-009688?style=flat-square)](#-api-endpoints-reference)
+[![Tests](https://img.shields.io/badge/🧪-Tests-22c55e?style=flat-square)](#-test-verification--quality-records)
+[![Deliverables](https://img.shields.io/badge/📋-Deliverables-181717?style=flat-square)](#-required-take-home-deliverables-mapping)
+
+</div>
 
 ---
 
 ## 📌 Project Overview
 
-**The Lenny Growth Assistant** ingests the complete corpus of *Lenny's Podcast* (279 episodes, 4,389 transcript chunks) to deliver an end-to-end intelligence workspace for product managers, growth leads, and founders. It provides strictly grounded answers with exact YouTube audio timestamps, synthesizes ~1,250-word Ship 30 atomic essays, and renders live, sandboxed HTML/CSS artifacts beside the chat stream.
+**The Lenny Growth Assistant** turns the complete corpus of *Lenny's Podcast* (279 episodes, 4,389 transcript chunks) into a production-grade internal assistant for Product Managers, Growth Leads, and Founders.
+
+### Key Capabilities:
+1. **Grounded Answers with Exact Timestamps:** Searches across 4,389 passages using BM25 + speaker entity boosting, attributing every claim to guest, episode title, and clickable YouTube audio timestamp.
+2. **Ship 30 for 30 Writing Studio:** Algorithmic essay generator crafting ~1,250-word atomic essays adhering to the 1-3-1 hook structure, modular framework pillars, and Monday morning execution checklists.
+3. **Claude-Style Sandboxed Artifact Viewer:** Renders live, interactive HTML/CSS calculators, growth simulators, and dashboards inside a secure, origin-isolated iframe sandbox.
+4. **Multi-Provider LLM Engine:** Seamlessly switch between Local Ollama (`llama3.2`), Anthropic Claude (`claude-3-5-sonnet`), OpenAI (`gpt-4o`), and a built-in deterministic Offline Fallback Engine.
+5. **Private Workspaces & Auth:** Complete user lifecycle with PBKDF2 password hashing, HMAC-SHA256 JWT tokens, and private session isolation.
 
 ---
 
 ## 🎥 Demo Video Walkthrough
 
+<div align="center">
+
 [![The Lenny Growth Assistant Demo Video](https://img.youtube.com/vi/K3OxMGg3kC8/maxresdefault.jpg)](https://www.youtube.com/watch?v=K3OxMGg3kC8)
 
-> 📺 **Watch Full Walkthrough on YouTube:** [https://www.youtube.com/watch?v=K3OxMGg3kC8](https://www.youtube.com/watch?v=K3OxMGg3kC8)
-> 
-> **Key Walkthrough Chapters:**
-> - `0:00` — Executive Summary, Discovery Brief & Problem Statement
-> - `0:30` — Grounded Conversational Q&A & Exact Audio Timestamp Citations
-> - `1:15` — Local Ollama (`llama3.2`) Execution & Multi-Model Switching
-> - `1:45` — Ship 30 for 30 Writing Studio & Sandboxed Claude Split-Pane Artifact Viewer
-> - `2:15` — Key Architectural Trade-Off (In-Memory BM25 + Entity Boost vs Heavy Vector DBs)
-> - `2:45` — Operational Handoff, Automated Tests & Quickstart Deployment
+**[▶️ Click Here to Watch the Full Walkthrough on YouTube](https://www.youtube.com/watch?v=K3OxMGg3kC8)**
+
+</div>
+
+### ⏱️ Key Video Chapters:
+- **`0:00`** — *Executive Summary & Discovery Brief* (Problem framing, target personas, JTBD)
+- **`0:30`** — *Grounded Conversational Q&A* (4,389 chunks RAG, entity boost, timestamp citations)
+- **`1:15`** — *Local Ollama & Multi-Model Switcher* (`llama3.2` execution, zero API keys, fallback resilience)
+- **`1:45`** — *Ship 30 for 30 Studio & Claude Split-View* (1-3-1 hook engine, live HTML artifact sandbox)
+- **`2:15`** — *Architectural Decisions & Trade-Offs* (In-memory BM25 vs heavy vector DBs, origin-isolated iframe)
+- **`2:45`** — *Operational Handoff & Automated Tests* (50 passing automated tests, CI/CD pipeline)
 
 ---
 
 ## ✨ Core Features Built & Verified
 
 ### 1. Grounded Conversational Assistant (`/chat`)
-- **4,389-Chunk RAG Search:** Fast BM25 lexical search with speaker entity-boosting (+25.0 score weight).
+- **4,389-Chunk In-Memory Index:** Fast BM25 lexical search with speaker entity-boosting (+25.0 score weight).
 - **Exact Verbatim Citations:** Every claim cites the speaker, episode title, and clickable YouTube audio timestamp.
 - **Multi-Turn Context & Session Isolation:** Conversations and memory are strictly isolated per session and user.
 - **Domain Guardrail:** Rejects out-of-domain queries to eliminate hallucinations.
@@ -119,7 +151,7 @@ graph TD
 ## 🚀 Quickstart & One-Command Run Guide
 
 ### Option 1: One-Click Startup (Recommended)
-- **Windows:** Double-click `start.bat`
+- **Windows:** Double-click [`start.bat`](start.bat)
 - **macOS / Linux:** Run `chmod +x start.sh && ./start.sh`
 
 ### Option 2: Docker Compose
@@ -191,7 +223,7 @@ npm run dev -- --port 3000 --host 127.0.0.1
 
 ## 🧪 Test Verification & Quality Records
 
-The platform includes **26 automated pytest tests** covering API contracts, RAG ranking, agent routing, Ship 30 essays, artifact security, and database persistence with a **100% pass rate**.
+The platform includes **50 automated pytest tests** covering API contracts, RAG ranking, agent routing, Ship 30 essays, artifact security, and database persistence with a **100% pass rate**.
 
 ### Run Test Suite:
 ```bash
@@ -200,12 +232,20 @@ python -m pytest tests/ -v
 ```
 
 ### Test Coverage Summary:
-| Test Category | Suites | Assertions & Scope | Result |
-| :--- | :---: | :--- | :---: |
-| **API & Health** | `test_api.py` | Health diagnostics, model list, transcript search, session lifecycle | ✅ 100% Pass |
-| **RAG & Grounding** | `test_rag.py` | 4,389-chunk index loading, BM25 scoring, entity-boosting, timestamps | ✅ 100% Pass |
-| **Agent & Skills** | `test_agent.py` | Ship 30 prompt builder, HTML artifact extraction, multi-model fallback | ✅ 100% Pass |
-| **End-to-End FDE** | `test_fde_full_evaluation.py` | Out-of-domain refusal, session isolation, artifact security, persistence | ✅ 100% Pass |
+| Test Category | Suite File | Tests | Scope & Assertions | Result |
+| :--- | :--- | :---: | :--- | :---: |
+| **API & Health** | `test_api.py` | 4 | Health diagnostics, model list, transcript search, session lifecycle | ✅ Passed |
+| **RAG & Grounding** | `test_rag.py` | 5 | 4,389-chunk index loading, BM25 scoring, entity-boosting, timestamps | ✅ Passed |
+| **Agent & Skills** | `test_agent.py` | 4 | Ship 30 prompt builder, HTML artifact extraction, multi-model fallback | ✅ Passed |
+| **Security & Sandbox** | `test_security.py` | 2 | XSS prevention, iframe sanitization, script isolation | ✅ Passed |
+| **Authentication** | `test_authentication.py` | 7 | PBKDF2 hashing, signup, login, JWT validation, profile route | ✅ Passed |
+| **Authorization** | `test_authorization.py` | 2 | Cross-user session & artifact access block | ✅ Passed |
+| **User Isolation** | `test_user_isolation.py` | 2 | Session list & personal context isolation | ✅ Passed |
+| **Profile & Workspaces**| `test_profile_workspace.py`| 4 | Identity updates, workspace metrics, multi-user isolation | ✅ Passed |
+| **Differentiating AI** | `test_differentiating_intelligence.py` | 10 | Decision memos, experiment briefs, PMF diagnostics, guest comparisons | ✅ Passed |
+| **End-to-End Evaluation**| `test_fde_full_evaluation.py` | 10 | 10 Killer Test cases (hallucination refusal, model fallback, persistence) | ✅ Passed |
+
+**Total:** **50 / 50 Tests Passing (100% Pass Rate)** 🟢
 
 ---
 
@@ -213,6 +253,9 @@ python -m pytest tests/ -v
 
 ```
 OOGWAY/
+├── .github/
+│   └── workflows/
+│       └── ci.yml        # GitHub Actions CI pipeline (Pytest + Vite Build)
 ├── backend/
 │   ├── app/
 │   │   ├── api/          # FastAPI routes, auth endpoints, Pydantic schemas
@@ -220,7 +263,7 @@ OOGWAY/
 │   │   ├── engine/       # BM25 RAG, Agent router, Ship 30 skill, LLM providers
 │   │   └── main.py       # FastAPI application entrypoint
 │   ├── data/             # Ingested transcripts (279 episodes, 4,389 chunks)
-│   ├── tests/            # Automated test suite (26 tests)
+│   ├── tests/            # Automated test suite (50 tests)
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
@@ -249,13 +292,21 @@ OOGWAY/
 | # | Deliverable | Location | Status |
 | :-: | :--- | :--- | :---: |
 | **1** | Public GitHub Repository | [https://github.com/nikki-nooka/OOGWAY](https://github.com/nikki-nooka/OOGWAY) | ✅ Live & Synced |
-| **2** | README.md | [README.md](README.md) | ✅ Complete |
+| **2** | Executive README | [README.md](README.md) | ✅ Complete |
 | **3** | PRD (Discovery Brief) | [PRD.md](PRD.md) | ✅ Complete |
 | **4** | Design Specification | [design.md](design.md) | ✅ Complete |
 | **5** | Architecture & Security | [architecture.md](architecture.md) | ✅ Complete |
 | **6** | Agent Transcripts | [agent-transcripts/](agent-transcripts/) | ✅ Complete |
-| **7** | Automated & Manual Tests | [TESTING.md](TESTING.md) & [backend/tests/](backend/tests/) | ✅ 26/26 Passed |
-| **8** | Demo Video Walkthrough | [YouTube Link](https://www.youtube.com/watch?v=K3OxMGg3kC8) | ✅ Uploaded & Live |
+| **7** | Automated Test Suite (50 Tests) | [TESTING.md](TESTING.md) & [backend/tests/](backend/tests/) | ✅ 50/50 Passed |
+| **8** | CI/CD GitHub Actions | [.github/workflows/ci.yml](.github/workflows/ci.yml) | ✅ 100% Green |
+| **9** | Production Tagged Release | [v1.0.0 Release](https://github.com/nikki-nooka/OOGWAY/releases) | ✅ Published |
+| **10**| Demo Video Walkthrough | [YouTube Link](https://www.youtube.com/watch?v=K3OxMGg3kC8) | ✅ Uploaded & Live |
 
-- **Official Form Submission:** `https://forms.gle/LgotDHNVxW1mbzNE7`  
-- **Submission Deadline:** 28/08/26 EOD
+---
+
+<div align="center">
+
+**Submitted for the Forward Deployed Engineer Role**  
+*Built by **NOOKA NIKSHITH** (`nikki-nooka`)*
+
+</div>
