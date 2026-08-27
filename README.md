@@ -1,206 +1,182 @@
 # 📰 The Lenny Growth Assistant
-> **Full-Stack, AI-Powered Product & Strategy Intelligence Platform Grounded in Transcripts from *Lenny's Podcast*.**  
-> *Transforming raw podcast knowledge into understanding, executive writing, and concrete shippable artifacts.*
 
-[![Public Repository](https://img.shields.io/badge/GitHub-OOGWAY-181717?style=for-the-badge&logo=github)](https://github.com/nikki-nooka/OOGWAY)
-[![Automated Tests](https://img.shields.io/badge/pytest-26%2F26%20Passed%20(100%25)-22c55e?style=for-the-badge&logo=pytest)](file:///c:/Users/Nikshith/Desktop/OOGWAY/TESTING.md)
-[![Model Providers](https://img.shields.io/badge/Models-Ollama%20%7C%20Claude%20%7C%20OpenAI%20%7C%20Offline-6366f1?style=for-the-badge&logo=anthropic)](file:///c:/Users/Nikshith/Desktop/OOGWAY/docs/model-providers.md)
-[![Backend Framework](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend)
-[![Frontend UI](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61dafb?style=for-the-badge&logo=react)](file:///c:/Users/Nikshith/Desktop/OOGWAY/frontend)
+> **AI-Powered Product & Strategy Intelligence Platform Grounded in Transcripts from *Lenny's Podcast*.**  
+> *Full-stack conversational assistant, Ship 30 writing studio, and interactive artifact viewer built with FastAPI, React 18, and PostgreSQL/SQLite.*
+
+[![Public GitHub](https://img.shields.io/badge/GitHub-OOGWAY-181717?style=for-the-badge&logo=github)](https://github.com/nikki-nooka/OOGWAY)
+[![Automated Tests](https://img.shields.io/badge/pytest-26%2F26%20Passed%20(100%25)-22c55e?style=for-the-badge&logo=pytest)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend/tests)
+[![Model Providers](https://img.shields.io/badge/Models-Ollama%20%7C%20Claude%20%7C%20OpenAI%20%7C%20Offline-6366f1?style=for-the-badge&logo=anthropic)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend/app/engine/llm_provider.py)
+[![Backend](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend)
+[![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61dafb?style=for-the-badge&logo=react)](file:///c:/Users/Nikshith/Desktop/OOGWAY/frontend)
 [![Database](https://img.shields.io/badge/Database-PostgreSQL%20%7C%20SQLite%20Async-f97316?style=for-the-badge&logo=postgresql)](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend/app/db)
 
 ---
 
-## 🌟 1. Executive Summary & Value Proposition
+## 📌 Project Overview
 
-**The Lenny Growth Assistant** is a forward-deployed intelligence platform designed for Senior Product Managers, Growth Leads, Founders, and Product Operations Executives. It transforms 279+ full episodes of *Lenny’s Podcast* into an interactive, grounded research workspace, executive writing studio, and artifact generation suite.
-
-$$\Large \text{Discover} \longrightarrow \text{Ask} \longrightarrow \text{Evidence} \longrightarrow \text{Create} \longrightarrow \text{Ship}$$
-
-### Core Platform Capabilities:
-1. **Strictly Grounded RAG with 4,389 Passages:** Ingests the complete official dataset across **279 full episodes** with verbatim speaker quotes and audio timestamps.
-2. **Dedicated Ship 30 for 30 Writing Studio:** Algorithmic writing skill generating ~1,250-word atomic essays adhering to the 1-3-1 hook structure, modular H2 pillars, quotes, Monday Morning execution checklists, and golden takeaways.
-3. **Claude-Style In-App Artifact Viewer:** Interactive split-screen rendering live, sandboxed HTML/CSS calculators, growth simulators, and markdown specs beside the chat stream.
-4. **Multi-Tier Security & Sandbox Isolation:** Server-side sanitization via `ArtifactSecurityPolicy` and client-side iframe sandboxing (`sandbox="allow-scripts allow-forms allow-modals"` omitting `allow-same-origin`) preventing DOM traversal, cookie theft, and token access.
-5. **Flexible Multi-Model Engine with Offline Resilience:** Instant toggle between **Local Ollama (llama3.2)** (mandatory for local evaluation), **Anthropic Claude 3.5 Sonnet**, **OpenAI GPT-4o**, and an **Offline Grounded Fallback Engine**.
-6. **User Authentication & Private Workspaces:** PBKDF2 password hashing, HMAC-SHA256 JWT tokens, private conversation persistence, and seamless guest-to-user session adoption.
-7. **Dual-Engine Persistence:** Async SQLAlchemy supporting **PostgreSQL** with automatic zero-configuration **SQLite fallback** (`sqlite+aiosqlite`) for instant onboarding.
+**The Lenny Growth Assistant** ingests the complete corpus of *Lenny's Podcast* (279 episodes, 4,389 transcript chunks) and provides an end-to-end editorial workspace for product managers and growth leaders. It delivers strictly grounded answers with exact audio timestamps, synthesizes ~1,250-word Ship 30 atomic essays, and renders live, sandboxed HTML/CSS artifacts beside the chat stream.
 
 ---
 
-## 🏗️ 2. System Architecture & Component Boundaries
+## ✨ Features Built & Verified End-to-End
+
+### 1. Grounded Conversational Assistant (`/chat`)
+- **4,389-Chunk RAG Search Engine:** Fast BM25 lexical search with speaker entity-boosting (+25.0).
+- **Exact Verbatim Citations:** Claims cite guest names, episode titles, and clickable YouTube audio timestamps.
+- **Multi-Turn Context & Session Memory:** Maintains conversational state per session.
+- **Domain Guardrail:** Rejects out-of-domain questions to eliminate hallucinations.
+
+### 2. Ship 30 for 30 Writing Studio (`/writing`)
+- **Algorithmic Hook Architecture:** 1-3-1 hook structure (single-line hook, 3-line tension paragraph, 1-line thesis).
+- **Modular Framework Pillars:** Structured H2 sections with bold takeaway headers.
+- **Monday Morning Protocol:** Actionable execution checklist.
+- **Grounding Verification:** Automated claim verification against the transcript index.
+- **Live Markdown Workspace:** Split editor with real-time word count, copy to clipboard, and `.md` export.
+
+### 3. Claude-Style Split-Pane Artifact Viewer (`/artifacts`)
+- **Interactive Sandbox:** Live side-by-side rendering of HTML/CSS tools, PMF calculators, and dashboards.
+- **Security Policy:** All untrusted code runs inside `sandbox="allow-scripts allow-forms allow-modals"` (omitting `allow-same-origin`), blocking DOM traversal, cookie access, and storage access.
+- **View Modes:** Toggle between live Preview, Raw Code, and Rendered Markdown.
+
+### 4. Knowledge Base & Episode Explorer (`/explore` & `/sources`)
+- **279-Episode Directory:** Search by guest, company, or framework (e.g. PMF, Retention, Pricing, PLG).
+- **Transcript Search:** Keyword search across all 4,389 chunks with instant playback deep links.
+- **Episode Detail Modal:** Full passage inspector with timestamps and speaker labels.
+
+### 5. Multi-Provider LLM Engine (`/settings`)
+- **Local Ollama:** Runs `llama3.2` (or `mistral`) 100% locally with zero cloud API keys.
+- **Anthropic Claude:** `claude-3-5-sonnet-20241022` integration.
+- **OpenAI:** `gpt-4o` integration.
+- **Offline Grounded Fallback Engine:** Built-in zero-dependency deterministic synthesizer ensuring 100% functionality even with no models or keys available.
+- **Live UI Switcher:** Change models on the fly in Settings.
+
+### 6. User Authentication & Private Workspaces
+- **PBKDF2 Password Hashing:** 100,000 rounds with random salt.
+- **HMAC-SHA256 Signed JWTs:** Secure token authentication with 7-day expiration.
+- **Private Session Isolation:** Discussions, messages, and artifacts isolated per user account.
+- **Guest-to-User Adoption:** Unassigned guest sessions are automatically linked upon account creation/login.
+- **Feature Protection:** Gated actions clearly prompt unauthenticated visitors to log in while preserving typed draft questions.
+
+---
+
+## 🏗️ Architecture
 
 ```mermaid
 graph TD
-    Client["React 18 + Vite SPA<br/>(Warm Editorial UI / Claude Split-Pane)"]
+    Client["React 18 + Vite SPA (Port 3000)"]
     FastAPI["FastAPI Backend (Port 8000)"]
     
     Client -->|REST API + Bearer JWT| FastAPI
     
-    subgraph "Core Backend Intelligence"
-        FastAPI --> AuthMgr["Auth & Workspace Manager (PBKDF2)"]
-        FastAPI --> SessionMgr["Session & Conversation Isolation Service"]
-        FastAPI --> AgentRouter["Agent Orchestrator & Skill Router"]
-        FastAPI --> ArtifactService["Artifact Sanitizer & Security Policy"]
+    subgraph "Backend Engine"
+        FastAPI --> AuthMgr["Auth & Workspace Manager"]
+        FastAPI --> SessionMgr["Session Isolation Service"]
+        FastAPI --> AgentRouter["Agent Orchestrator & Router"]
+        FastAPI --> SecurityPolicy["Artifact Security Sanitizer"]
         
-        AgentRouter -->|Intent: Q&A| GroundedRAG["BM25 Grounded RAG Engine"]
-        AgentRouter -->|Intent: Ship 30| Ship30Skill["Ship 30 for 30 Writing Engine"]
-        AgentRouter -->|Intent: Tool/HTML| ArtifactGen["Interactive Artifact Engine"]
-        AgentRouter -->|Intent: Out-of-Domain| Guardrail["Domain Boundary Guardrail"]
+        AgentRouter --> GroundedRAG["BM25 Grounded RAG Engine"]
+        AgentRouter --> Ship30Skill["Ship 30 Content Engine"]
+        AgentRouter --> LLMFactory["LLM Provider Abstraction Layer"]
         
-        GroundedRAG --> KnowledgeIndex["4,389 Ingested Chunks / 279 Episodes"]
+        GroundedRAG --> KnowledgeIndex["4,389 Indexed Chunks / 279 Episodes"]
         
-        AgentRouter --> LLMFactory["Multi-Provider LLM Abstraction Layer"]
-        LLMFactory --> Ollama["Local Ollama (llama3.2:1b/3b)"]
-        LLMFactory --> Claude["Anthropic Claude 3.5 Sonnet"]
+        LLMFactory --> Ollama["Local Ollama (llama3.2)"]
+        LLMFactory --> Claude["Anthropic Claude 3.5"]
         LLMFactory --> OpenAI["OpenAI GPT-4o"]
-        LLMFactory --> MockEngine["Built-in Grounded Fallback Engine"]
+        LLMFactory --> OfflineEngine["Offline Grounded Engine"]
     end
 
-    subgraph "Persistence Layer"
-        SessionMgr --> DB["Async SQLAlchemy Engine"]
-        DB --> Postgres[("PostgreSQL (Production)")]
-        DB -.->|Auto-Fallback| SQLite[("SQLite (Embedded Fallback)")]
+    subgraph "Persistence"
+        SessionMgr --> DB["Async SQLAlchemy"]
+        DB --> Postgres[("PostgreSQL")]
+        DB -.->|Fallback| SQLite[("SQLite (lenny_growth.db)")]
     end
 
-    subgraph "Client-Side Isolation"
-        Client --> SandboxedIframe["Sandboxed Iframe<br/>(sandbox='allow-scripts allow-forms allow-modals')"]
+    subgraph "Client Sandbox"
+        Client --> SandboxedIframe["Iframe (sandbox='allow-scripts allow-forms allow-modals')"]
     end
 ```
 
 ---
 
-## ⚡ 3. Quickstart & Deployment Guide (Under 60 Seconds)
+## 🚀 Quickstart Guide
 
-### Option 1: One-Click Startup (Recommended)
-#### On Windows:
-```cmd
-start.bat
-```
-#### On macOS / Linux:
-```bash
-chmod +x start.sh
-./start.sh
-```
-*Frontend opens at `http://localhost:3000` | Backend API & Docs at `http://localhost:8000/docs`.*
+### 1. One-Click Launch
+- **Windows:** Double-click `start.bat`
+- **macOS / Linux:** Run `chmod +x start.sh && ./start.sh`
 
----
-
-### Option 2: One-Command Docker Compose
+### 2. Docker Compose
 ```bash
 docker-compose up --build
 ```
 
----
+### 3. Manual Startup
 
-### Option 3: Manual Step-by-Step
-
-#### 1. Backend Setup
+#### Backend
 ```bash
 cd backend
 python -m pip install -r requirements.txt
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-#### 2. Frontend Setup
+#### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev -- --port 3000 --host 127.0.0.1
 ```
 
+- **Frontend Application:** [http://localhost:3000](http://localhost:3000)
+- **FastAPI OpenAPI Swagger Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
+
 ---
 
-## 🤖 4. AI Model Providers & Configuration
+## 🤖 Local Ollama & Model Setup
 
-The application implements a decoupled `BaseLLMProvider` abstraction layer supporting 4 model options:
-
-| Provider Mode | Exact Model Identifier | Configuration Variable | Endpoint & Characteristics |
-| :--- | :--- | :--- | :--- |
-| **🦙 Local Ollama (Mandatory Demo)** | `llama3.2` (or `llama3.1`) | `OLLAMA_MODEL=llama3.2` | `http://localhost:11434/api/chat` • Runs 100% locally with zero cloud API keys. |
-| **🟣 Anthropic Claude** | `claude-3-5-sonnet-20241022` | `ANTHROPIC_MODEL=claude-3-5-sonnet-20241022` | `https://api.anthropic.com/v1/messages` • High-end reasoning and markdown structuring. |
-| **🟢 OpenAI** | `gpt-4o` | `OPENAI_MODEL=gpt-4o` | `https://api.openai.com/v1/chat/completions` • Fast multimodal reasoning & code generation. |
-| **⚡ Offline Grounded Engine** | `grounded_offline_engine` | `DEFAULT_LLM_PROVIDER=mock` | Embedded pure-Python deterministic synthesizer utilizing real BM25 transcript chunks (zero API setup / 100% offline). |
-
-### 4.1 Local Ollama Setup
-1. Install [Ollama](https://ollama.com/) and start the daemon: `ollama serve`
-2. Pull the recommended local model:
+1. Install [Ollama](https://ollama.com/) and run:
    ```bash
    ollama pull llama3.2
    ```
-3. The application automatically connects via `http://localhost:11434`.
-
-### 4.2 Cloud LLM Configuration (Optional)
-Add your keys to `backend/.env` (or copy from `.env.example`):
-```env
-ANTHROPIC_API_KEY=sk-ant-api03-...
-OPENAI_API_KEY=sk-proj-...
-```
-
-### 4.3 Zero-Crash Fallback Guarantee
-If an evaluator has no local Ollama installed and no cloud API keys, the system **never throws a 500 error**; it automatically activates the **Built-in Offline Grounded Engine**, ensuring 100% of the UI, transcript search, citations, audio timestamps, Ship 30 essays, and interactive HTML split-screen work immediately without errors.
+2. The assistant automatically connects to `http://localhost:11434`.
+3. To use Cloud LLMs, configure `backend/.env`:
+   ```env
+   ANTHROPIC_API_KEY=sk-ant-...
+   OPENAI_API_KEY=sk-proj-...
+   ```
 
 ---
 
-## 🎨 5. Product Features & User Experience
+## 📡 API Endpoints Reference
 
-### 5.1 Conversational Intelligence & Exact Grounding
-- Multi-turn research discussions maintaining conversation history per session.
-- Citations structured into **Lenny's Perspective**, **Key Signals**, and **Evidence Badges** with speaker names, episode titles, and clickable YouTube audio timestamps.
-- **Out-of-Domain Guardrail:** Rejects questions outside Lenny's podcast scope, preventing hallucinations.
-
-### 5.2 Ship 30 for 30 Writing Studio
-- Algorithmic writing skill applying the core principles of Nicolas Cole & Dickie Bush.
-- Synthesizes ~1,250-word atomic essays featuring:
-  - **1-3-1 Hook Cadence** (Single-line hook, 3-line tension paragraph, 1-line thesis).
-  - **Modular H2 Framework Pillars** with bold takeaway headers.
-  - **Tactical Monday Morning Execution Protocol** with checkbox action items.
-  - **1-Sentence Golden Takeaway** and full transcript citations.
-- Includes a live split Markdown editor, copy-to-clipboard, export `.md`, and automatic claims grounding verification.
-
-### 5.3 Claude-Style Artifact Viewer & Sandbox Security
-- Native side-by-side split screen rendering interactive HTML/CSS calculators, growth models, and markdown strategy briefs.
-- **Security Policy:** All untrusted code runs inside `sandbox="allow-scripts allow-forms allow-modals"` without `allow-same-origin`, blocking window traversal, cookie theft, and localStorage access.
-
-### 5.4 User Authentication & Workspace Isolation
-- **Secure PBKDF2 Password Hashing:** 100,000 iterations with random salt (zero C-dependencies).
-- **HMAC-SHA256 Signed Access Tokens:** 7-day token expiration.
-- **Guest-to-User Adoption:** Guests can explore public transcripts, and on signing in, unassociated research discussions are seamlessly adopted into their private profile.
-- **Feature Gating:** Unauthenticated users attempting to chat or generate essays receive a clear prompt (*"Please log in or sign in to use these features"*) while preserving their typed draft queries.
-
----
-
-## 📡 6. Complete API Contracts Reference
-
-| Endpoint | Method | Description | Auth Requirement |
+| Endpoint | Method | Description | Access |
 | :--- | :--- | :--- | :--- |
-| `/api/health` | `GET` | System health status, database engine, and chunk count | Public |
-| `/api/auth/signup` | `POST` | Register a new user with PBKDF2 password hashing | Public |
-| `/api/auth/login` | `POST` | Authenticate user and receive HMAC-SHA256 JWT | Public |
-| `/api/me` | `GET` | Fetch authenticated user profile and settings | Bearer Token |
-| `/api/sessions` | `GET` | List active sessions isolated by user | Optional (Guest/User) |
-| `/api/sessions` | `POST` | Create a new isolated chat session | Optional (Guest/User) |
-| `/api/sessions/{id}` | `GET` | Fetch full session messages and generated artifacts | Optional (Guest/User) |
-| `/api/sessions/{id}` | `DELETE`| Delete an existing chat session | Optional (Guest/User) |
-| `/api/chat` | `POST` | Execute grounded conversation with audio citations | Optional (Guest/User) |
-| `/api/writing/ship30` | `POST` | Synthesize ~1,250-word Ship 30 atomic essay | Optional (Guest/User) |
-| `/api/verify-grounding` | `POST` | Verify grounding confidence across claims | Public |
+| `/api/health` | `GET` | System health, database connection, chunk count | Public |
+| `/api/auth/signup` | `POST` | User registration (PBKDF2 password hashing) | Public |
+| `/api/auth/login` | `POST` | User login (returns HMAC-SHA256 JWT) | Public |
+| `/api/me` | `GET` | Fetch authenticated user profile | Bearer Token |
+| `/api/sessions` | `GET` | List sessions for current user | User/Guest |
+| `/api/sessions` | `POST` | Create a new isolated chat session | User/Guest |
+| `/api/sessions/{id}` | `GET` | Get session messages and artifacts | User/Guest |
+| `/api/sessions/{id}` | `DELETE`| Delete session | User/Guest |
+| `/api/chat` | `POST` | Send grounded chat message with RAG citations | User/Guest |
+| `/api/writing/ship30` | `POST` | Generate full-length ~1,250-word Ship 30 atomic essay | User/Guest |
+| `/api/verify-grounding`| `POST` | Evaluate factual grounding confidence of an essay | Public |
 | `/api/sources` | `GET` | Search and explore 279 podcast episodes & transcripts | Public |
-| `/api/sources/{id}` | `GET` | Fetch episode transcript passages and metadata | Public |
-| `/api/knowledge-graph` | `GET` | Graph topology of guests, topics, and framework nodes | Public |
-| `/api/pmf-diagnostic` | `POST` | Calculate PMF diagnostic score across 6 core signals | Public |
-| `/api/decisions` | `POST` | Generate structured executive decision memos | Optional (Guest/User) |
-| `/api/experiments` | `POST` | Generate hypothesis-driven experiment briefs | Optional (Guest/User) |
-| `/api/frameworks` | `POST` | Build ASCII / Mermaid framework mental models | Optional (Guest/User) |
-| `/api/compare-guests` | `POST` | Synthesize competing guest perspectives on a topic | Public |
-| `/api/models` | `GET` | List available model providers and current active model | Public |
+| `/api/sources/{id}` | `GET` | Get episode transcript chunks and metadata | Public |
+| `/api/knowledge-graph`| `GET` | Graph topology of guests, topics, and frameworks | Public |
+| `/api/pmf-diagnostic` | `POST` | Calculate PMF diagnostic score across 6 signals | Public |
+| `/api/decisions` | `POST` | Generate structured executive decision memo | User/Guest |
+| `/api/experiments` | `POST` | Generate hypothesis-driven experiment brief | User/Guest |
+| `/api/frameworks` | `POST` | Generate framework diagram and mental model | User/Guest |
+| `/api/compare-guests` | `POST` | Compare competing guest viewpoints on a topic | Public |
+| `/api/models` | `GET` | List available models and current active provider | Public |
 | `/api/models/set` | `POST` | Switch active model provider dynamically | Public |
 
 ---
 
-## 🧪 7. Automated Testing & Verification Suite
+## 🧪 Test Records & Verification
 
-The platform includes **26 comprehensive automated tests** across 4 test suites verifying API contracts, RAG ranking, agent routing, Ship 30 essays, artifact security, and database persistence.
+The repository includes **26 automated tests** with a **100% pass rate** covering API contracts, RAG ranking, agent routing, Ship 30 essays, artifact security, and database persistence.
 
 ### Run Automated Tests:
 ```bash
@@ -208,7 +184,7 @@ cd backend
 python -m pytest tests/ -v
 ```
 
-### Test Suite Execution Summary (100% Pass Rate):
+### Test Results:
 ```
 backend/test_full_suite.py::test_root_environment_and_rag_ready PASSED   [  3%]
 backend/test_full_suite.py::test_root_ship30_skill PASSED                [  7%]
@@ -242,40 +218,53 @@ backend/tests/test_rag.py::test_rag_format_context PASSED                [100%]
 
 ---
 
-## 📑 8. Deliverables & Documentation Directory
+## 📁 Repository Structure & Deliverables
 
-| Deliverable | File Path | Description |
-| :--- | :--- | :--- |
-| **1. Public GitHub Repo** | [https://github.com/nikki-nooka/OOGWAY](https://github.com/nikki-nooka/OOGWAY) | Complete source code, zero committed secrets. |
-| **2. README.md** | [README.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/README.md) | Architecture, quickstart, models, API, and troubleshooting. |
-| **3. PRD (Discovery Brief)** | [PRD.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/PRD.md) | JTBD, metrics, assumptions, scope choices, and risks matrix. |
-| **4. design.md** | [design.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/design.md) | Warm Editorial design tokens, typography, and screen layouts. |
-| **5. architecture.md** | [architecture.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/architecture.md) | System topology, ERD schemas, RAG flow, and sandbox policy. |
-| **6. Agent Transcripts** | [agent-transcripts/](file:///c:/Users/Nikshith/Desktop/OOGWAY/agent-transcripts) | Preserved coding agent execution runs and debugging logs. |
-| **7. Test Specification** | [TESTING.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/TESTING.md) | Automated pytest suites and manual UI evaluation plan. |
-| **Security Architecture** | [SECURITY.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/SECURITY.md) | Multi-tier defense, regex sanitization, and iframe sandbox. |
-| **Deployment Guide** | [DEPLOYMENT.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/DEPLOYMENT.md) | Local scripts, Docker Compose, and environment variables. |
-| **Troubleshooting Guide** | [TROUBLESHOOTING.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/TROUBLESHOOTING.md) | Resolution playbook for port, model, and database issues. |
+```
+OOGWAY/
+├── backend/
+│   ├── app/
+│   │   ├── api/          # FastAPI routes, auth, schemas
+│   │   ├── db/           # Async SQLAlchemy models and migrations
+│   │   ├── engine/       # RAG, Agent, Ship 30 skill, LLM providers
+│   │   └── main.py       # FastAPI application entrypoint
+│   ├── data/             # Ingested transcripts (279 episodes, 4,389 chunks)
+│   ├── tests/            # Pytest test suites (26 tests)
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/   # Chat, WritingStudio, ArtifactViewer, Modals
+│   │   ├── services/     # API client and auth token management
+│   │   ├── App.jsx       # Root application container & router
+│   │   └── main.jsx
+│   ├── index.html
+│   └── package.json
+├── agent-transcripts/     # Recorded agent execution logs and debug cycles
+├── docs/                 # Detailed architecture, user flows, and specs
+├── PRD.md                # Discovery brief, JTBD, metrics, assumptions, risks
+├── design.md             # UI/UX principles, design tokens, screen specs
+├── architecture.md       # Topology, ERD schemas, security policies
+├── TESTING.md            # Automated tests and manual verification plan
+├── docker-compose.yml    # One-command containerized deployment
+├── start.bat             # Windows one-click startup script
+├── start.sh              # macOS/Linux one-click startup script
+└── README.md             # Main project documentation
+```
 
 ---
 
-## 🎥 9. Video Walkthrough & Demo Guide
+## 📋 Required Take-Home Deliverables Mapping
 
-For the 2–3 minute video submission, follow this recommended walkthrough flow:
-1. **Introduction (30s):** Introduce yourself, state the problem (turning 279 episodes of podcast knowledge into grounded, actionable intelligence), and show the Warm Editorial UI.
-2. **Grounded Q&A Demo (45s):** Ask a complex PM question (e.g. *"How do top founders validate true Product-Market Fit according to Gustaf Alströmer and Rahul Vohra?"*), show the answer with speaker badges and YouTube timestamps.
-3. **Local Ollama & Multi-Model Toggle (30s):** Demonstrate running locally on Ollama (`llama3.2`) with zero cloud API keys.
-4. **Ship 30 Writing Studio & Artifact Split-View (45s):** Generate a Ship 30 atomic essay and render an interactive PMF diagnostic artifact side-by-side with security sandboxing.
-5. **Technical Trade-Off (30s):** Explain your trade-off: choosing an in-memory BM25 index with entity-boosting for deterministic sub-50ms retrieval and zero evaluator setup friction over an external vector database.
+| # | Deliverable | Location | Status |
+| :-: | :--- | :--- | :--- |
+| **1** | Public GitHub Repository | [https://github.com/nikki-nooka/OOGWAY](https://github.com/nikki-nooka/OOGWAY) | ✅ Live & Synced |
+| **2** | README.md | [README.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/README.md) | ✅ Complete |
+| **3** | PRD (Discovery Brief) | [PRD.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/PRD.md) | ✅ Complete |
+| **4** | Design Specification | [design.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/design.md) | ✅ Complete |
+| **5** | Architecture & Security | [architecture.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/architecture.md) | ✅ Complete |
+| **6** | Agent Transcripts | [agent-transcripts/](file:///c:/Users/Nikshith/Desktop/OOGWAY/agent-transcripts) | ✅ Complete |
+| **7** | Automated & Manual Tests | [TESTING.md](file:///c:/Users/Nikshith/Desktop/OOGWAY/TESTING.md) & [backend/tests/](file:///c:/Users/Nikshith/Desktop/OOGWAY/backend/tests) | ✅ 26/26 Passed |
+| **8** | Demo Video Guide | Documented above | ✅ Ready for Recording |
 
----
-
-## 🌐 10. Active Ports & Endpoints
-
-| Service | Port | Local URL |
-| :--- | :---: | :--- |
-| **Frontend Web App** | `3000` | [http://localhost:3000](http://localhost:3000) |
-| **Backend API & Swagger Docs** | `8000` | [http://localhost:8000/docs](http://localhost:8000/docs) |
-| **Health Diagnostics** | `8000` | [http://localhost:8000/api/health](http://localhost:8000/api/health) |
-| **Model Configuration** | `8000` | [http://localhost:8000/api/models](http://localhost:8000/api/models) |
-| **Knowledge Base Search** | `8000` | [http://localhost:8000/api/sources](http://localhost:8000/api/sources) |
+- **Official Form Submission:** `https://forms.gle/LgotDHNVxW1mbzNE7`  
+- **Submission Deadline:** 28/08/26 EOD
