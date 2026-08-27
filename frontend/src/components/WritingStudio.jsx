@@ -17,7 +17,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { api } from '../services/api';
 
-export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
+export default function WritingStudio({ initialTopic = '', onSaveArtifact, currentUser, onOpenAuth }) {
   const [topic, setTopic] = useState(initialTopic || 'How to Measure and Accelerate Product-Market Fit');
   const [style, setStyle] = useState('ship30');
   const [targetWords, setTargetWords] = useState(1250);
@@ -34,6 +34,10 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
+    if (!currentUser) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
     setGenerating(true);
     setError(null);
     setSaved(false);
@@ -180,6 +184,32 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact }) {
             />
           </div>
         </div>
+
+        {!currentUser && (
+          <div style={{
+            margin: '16px 0 10px',
+            padding: '10px 16px',
+            backgroundColor: 'var(--bg-secondary)',
+            border: '1px solid var(--border-medium)',
+            borderRadius: 'var(--radius-sm)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+              <Sparkles size={15} color="var(--accent-primary)" />
+              <span><strong>Sign In Required:</strong> Please sign in or register to synthesize full-length Ship 30 atomic essays and save them to your workspace.</span>
+            </div>
+            <button 
+              className="btn btn-primary"
+              onClick={onOpenAuth}
+              style={{ padding: '5px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}
+            >
+              Sign In / Register
+            </button>
+          </div>
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>

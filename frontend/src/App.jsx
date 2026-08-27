@@ -203,6 +203,10 @@ export default function App() {
   };
 
   const handleNewSession = async () => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     try {
       const newSession = await api.createSession({
         title: "New Discussion",
@@ -265,6 +269,11 @@ export default function App() {
 
   const handleSendMessage = async (text) => {
     if (!text.trim() || loading) return;
+
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
 
     let targetSessionId = activeSessionId;
 
@@ -354,6 +363,10 @@ export default function App() {
 
   // Cross-feature routing handlers
   const handleStartChatWithPrompt = (prompt) => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     navigateToTab('chat');
     handleSendMessage(prompt);
   };
@@ -489,6 +502,8 @@ export default function App() {
               onToggleTheme={toggleTheme}
               isSidebarOpen={isSidebarOpen}
               onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+              currentUser={currentUser}
+              onOpenAuth={() => setIsAuthModalOpen(true)}
             />
 
             {/* Right Side-by-Side Claude-Style Artifact Viewer (Screen 13 & 14) */}
@@ -506,6 +521,8 @@ export default function App() {
           <WritingStudio 
             initialTopic={writingInitialTopic}
             onSaveArtifact={() => {}}
+            currentUser={currentUser}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
           />
         )}
 

@@ -382,7 +382,13 @@ export default function Navbar({
         {/* New Chat CTA */}
         <button 
           className="btn btn-primary"
-          onClick={() => onSelectTab('chat_new')}
+          onClick={() => {
+            if (!currentUser) {
+              if (onOpenAuth) onOpenAuth();
+            } else {
+              onSelectTab('chat_new');
+            }
+          }}
           style={{ padding: '6px 14px', fontSize: '12.5px' }}
         >
           <Sparkles size={13} />

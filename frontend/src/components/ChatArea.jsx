@@ -28,7 +28,9 @@ export default function ChatArea({
   theme,
   onToggleTheme,
   isSidebarOpen,
-  onToggleSidebar
+  onToggleSidebar,
+  currentUser,
+  onOpenAuth
 }) {
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
@@ -51,6 +53,10 @@ export default function ChatArea({
 
   const handleSend = () => {
     if (!inputText.trim() || loading) return;
+    if (!currentUser) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
     onSendMessage(inputText);
     setInputText('');
     if (textareaRef.current) {
@@ -121,6 +127,10 @@ export default function ChatArea({
         <div className="chat-inner">
           {messages.length === 0 ? (
             <QuickPrompts onSelectPrompt={(prompt) => {
+              if (!currentUser) {
+                if (onOpenAuth) onOpenAuth();
+                return;
+              }
               setInputText(prompt);
               onSendMessage(prompt);
             }} />
@@ -161,12 +171,39 @@ export default function ChatArea({
       {/* Input Form Bar */}
       <div className="chat-input-container">
         <div className="chat-input-inner">
+          {!currentUser && (
+            <div style={{
+              marginBottom: '10px',
+              padding: '10px 16px',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-medium)',
+              borderRadius: 'var(--radius-sm)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.06)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+                <Sparkles size={15} color="var(--accent-primary)" />
+                <span><strong>Sign In Required:</strong> Sign in or create a free account to chat with Lenny, run grounded RAG queries, and save your private research workspace.</span>
+              </div>
+              <button 
+                className="btn btn-primary"
+                onClick={onOpenAuth}
+                style={{ padding: '5px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}
+              >
+                Sign In / Register
+              </button>
+            </div>
+          )}
+
           <div className="chat-input-box">
             <textarea
               ref={textareaRef}
               rows={1}
               className="chat-textarea"
-              placeholder="Ask about PMF, retention, pricing, or ask for a Ship 30 for 30 essay / interactive artifact..."
+              placeholder={currentUser ? "Ask about PMF, retention, pricing, or ask for a Ship 30 for 30 essay / interactive artifact..." : "Sign in or register to start asking Lenny questions..."}
               value={inputText}
               onChange={handleInputResize}
               onKeyDown={handleKeyDown}
@@ -179,6 +216,7 @@ export default function ChatArea({
                 className="btn-send"
                 disabled={!inputText.trim() || loading}
                 onClick={handleSend}
+                title={currentUser ? "Send message" : "Sign in to send"}
               >
                 <Send size={14} />
               </button>

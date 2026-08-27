@@ -61,7 +61,11 @@ export default function Sidebar({
 
       {/* Action Buttons */}
       <div className="sidebar-actions" style={{ display: 'flex', gap: '6px' }}>
-        <button className="btn-new-chat" onClick={onNewSession} style={{ flex: 1 }}>
+        <button 
+          className="btn-new-chat" 
+          onClick={currentUser ? onNewSession : onOpenAuth} 
+          style={{ flex: 1 }}
+        >
           <Plus size={15} />
           <span>New Discussion</span>
         </button>
@@ -110,15 +114,16 @@ export default function Sidebar({
                 cursor: 'pointer'
               }}
             >
-              Confirm Clear
+              Confirm
             </button>
             <button 
               onClick={() => setShowClearConfirm(false)}
               style={{
+                flex: 1,
                 padding: '4px 8px',
                 background: 'transparent',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-medium)',
                 borderRadius: '4px',
                 fontSize: '11px',
                 cursor: 'pointer'
@@ -130,13 +135,13 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* Search Bar */}
-      <div style={{ padding: '0 14px 6px' }}>
+      {/* Search Input Bar */}
+      <div style={{ padding: '0 12px 8px' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          background: 'var(--bg-card)',
+          background: 'var(--bg-secondary)',
           padding: '6px 8px',
           borderRadius: 'var(--radius-sm)',
           border: '1px solid var(--border-subtle)',
@@ -177,13 +182,22 @@ export default function Sidebar({
         </div>
         
         {filteredSessions.length === 0 ? (
-          <div style={{ padding: '28px 12px', textAlign: 'center' }}>
+          <div style={{ padding: '24px 12px', textAlign: 'center' }}>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
               {currentUser ? 'No conversations yet' : 'No saved conversations'}
             </div>
             {!currentUser && (
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                Sign in to save and sync your research across devices.
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '10px' }}>
+                  Sign in to save and sync your research across devices.
+                </div>
+                <button
+                  className="btn btn-primary"
+                  onClick={onOpenAuth}
+                  style={{ width: '100%', padding: '6px 12px', fontSize: '11.5px', fontWeight: 600 }}
+                >
+                  Sign In / Register
+                </button>
               </div>
             )}
           </div>
