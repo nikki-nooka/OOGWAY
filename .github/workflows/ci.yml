@@ -30,8 +30,7 @@ jobs:
       env:
         PYTHONPATH: backend
       run: |
-        cd backend
-        python -m pytest tests/ -v
+        python -m pytest backend/tests/ -v
 
   frontend-build:
     name: Frontend Vite Production Build
