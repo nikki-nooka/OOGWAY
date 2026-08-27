@@ -199,14 +199,14 @@ export default function WritingStudio({ initialTopic = '', onSaveArtifact, curre
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
               <Sparkles size={15} color="var(--accent-primary)" />
-              <span><strong>Sign In Required:</strong> Please sign in or register to synthesize full-length Ship 30 atomic essays and save them to your workspace.</span>
+              <span><strong>Please log in or sign in to use these features:</strong> Sign in or register to synthesize full-length Ship 30 atomic essays and save them to your workspace.</span>
             </div>
             <button 
               className="btn btn-primary"
               onClick={onOpenAuth}
-              style={{ padding: '5px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}
+              style={{ padding: '6px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}
             >
-              Sign In / Register
+              Log In / Sign In
             </button>
           </div>
         )}

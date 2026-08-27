@@ -186,14 +186,14 @@ export default function ChatArea({
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
                 <Sparkles size={15} color="var(--accent-primary)" />
-                <span><strong>Sign In Required:</strong> Sign in or create a free account to chat with Lenny, run grounded RAG queries, and save your private research workspace.</span>
+                <span><strong>Please log in or sign in to use these features:</strong> Sign in or create a free account to chat with Lenny, run grounded podcast RAG, and save your private research workspace.</span>
               </div>
               <button 
                 className="btn btn-primary"
                 onClick={onOpenAuth}
-                style={{ padding: '5px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                style={{ padding: '6px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}
               >
-                Sign In / Register
+                Log In / Sign In
               </button>
             </div>
           )}

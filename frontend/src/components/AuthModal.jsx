@@ -72,25 +72,37 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         </div>
 
         {/* Masthead Banner */}
-        <div style={{ textAlign: 'center', margin: '8px 0 20px 0' }}>
+        <div style={{ textAlign: 'center', margin: '8px 0 16px 0' }}>
           <h2 style={{ 
             fontFamily: 'var(--font-serif)', 
-            fontSize: '1.75rem', 
+            fontSize: '1.65rem', 
             fontWeight: 700, 
             color: 'var(--text-primary)',
             margin: '0 0 6px 0',
             letterSpacing: '-0.02em'
           }}>
-            The Lenny Growth Assistant
+            Lenny Growth Assistant
           </h2>
+          <div style={{
+            display: 'inline-block',
+            fontSize: '0.82rem',
+            color: 'var(--accent-primary)',
+            fontWeight: 600,
+            background: 'var(--bg-secondary)',
+            padding: '4px 10px',
+            borderRadius: '4px',
+            marginBottom: '6px'
+          }}>
+            🔒 Please log in or sign in to use these features
+          </div>
           <p style={{ 
             fontFamily: 'var(--font-sans)', 
-            fontSize: '0.9rem', 
+            fontSize: '0.84rem', 
             color: 'var(--text-secondary)', 
             margin: 0,
-            fontStyle: 'italic'
+            lineHeight: 1.4
           }}>
-            Think better. Ship better.
+            Sign in or create an account to ask Lenny questions, synthesize Ship 30 essays, and save your private research.
           </p>
         </div>
 
