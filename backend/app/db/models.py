@@ -18,12 +18,36 @@ class UserModel(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
+
+    # Professional Identity & Tagline
+    role = Column(String(100), default="Product Builder")
+    company = Column(String(100), default="")
+    industry = Column(String(100), default="B2B SaaS")
+    experience_level = Column(String(50), default="Senior")
+    location = Column(String(100), default="")
+    tagline = Column(String(255), default="Exploring growth, product strategy, and AI-powered products.")
+
+    # Interests & Topic Chips
+    interests = Column(JSON, default=lambda: ["Product Strategy", "Growth", "Retention", "PMF", "AI"])
+
+    # Current Focus & Goals (Signature Component)
+    focus_goal = Column(String(255), default="Improve activation and time-to-value")
+    focus_metric = Column(String(100), default="Activation Rate")
+    focus_challenge = Column(Text, default="Users are signing up but dropping off before reaching their primary Aha! milestone.")
+    focus_progress = Column(Integer, default=65)
+
+    # Privacy & Context Controls
+    privacy_use_context = Column(Boolean, default=True)
+    privacy_personalize_explore = Column(Boolean, default=True)
+    privacy_use_history = Column(Boolean, default=False)
+
     created_at = Column(DateTime(timezone=True), default=utc_now)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     sessions = relationship("SessionModel", back_populates="user", cascade="all, delete-orphan", order_by="desc(SessionModel.updated_at)")
     artifacts = relationship("ArtifactModel", back_populates="user", cascade="all, delete-orphan", order_by="desc(ArtifactModel.created_at)")
     personal_context = relationship("PersonalContextModel", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
 
 class PersonalContextModel(Base):
     __tablename__ = "personal_context"

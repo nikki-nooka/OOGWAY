@@ -16,12 +16,53 @@ class UserProfile(BaseModel):
     id: str
     name: str
     email: str
+    role: str = "Product Builder"
+    company: str = ""
+    industry: str = "B2B SaaS"
+    experience_level: str = "Senior"
+    location: str = ""
+    tagline: str = "Exploring growth, product strategy, and AI-powered products."
+    interests: List[str] = ["Product Strategy", "Growth", "Retention", "PMF", "AI"]
+    focus_goal: str = "Improve activation and time-to-value"
+    focus_metric: str = "Activation Rate"
+    focus_challenge: str = "Users are signing up but dropping off before reaching their primary Aha! milestone."
+    focus_progress: int = 65
+    privacy_use_context: bool = True
+    privacy_personalize_explore: bool = True
+    privacy_use_history: bool = False
     created_at: datetime
+
+class UserProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    company: Optional[str] = None
+    industry: Optional[str] = None
+    experience_level: Optional[str] = None
+    location: Optional[str] = None
+    tagline: Optional[str] = Field(None, max_length=150)
+    interests: Optional[List[str]] = None
+    focus_goal: Optional[str] = None
+    focus_metric: Optional[str] = None
+    focus_challenge: Optional[str] = None
+    focus_progress: Optional[int] = Field(None, ge=0, le=100)
+    privacy_use_context: Optional[bool] = None
+    privacy_personalize_explore: Optional[bool] = None
+    privacy_use_history: Optional[bool] = None
 
 class AuthResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserProfile
+
+class WorkspaceSummaryResponse(BaseModel):
+    user: UserProfile
+    context: Optional[Dict[str, Any]] = None
+    stats: Dict[str, int]
+    knowledge_dna: List[Dict[str, Any]]
+    recent_thinking: List[Dict[str, Any]]
+    active_learning: List[Dict[str, Any]]
+    recommendations: List[Dict[str, Any]]
+    profile_completeness: int
 
 class PersonalContextUpdate(BaseModel):
     company_type: str = Field("B2B SaaS", description="e.g. B2B SaaS, Marketplace, Consumer")
@@ -39,6 +80,7 @@ class PersonalContextResponse(BaseModel):
     problem: str
     constraints: str
     updated_at: datetime
+
 
 # --- Chat & Session Schemas ---
 class ChatRequest(BaseModel):

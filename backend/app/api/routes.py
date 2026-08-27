@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from app.db.database import get_db
 from app.db.models import UserModel, PersonalContextModel, SessionModel, MessageModel, ArtifactModel
 from app.api.schemas import (
-    UserSignup, UserLogin, UserProfile, AuthResponse,
+    UserSignup, UserLogin, UserProfile, UserProfileUpdate, AuthResponse, WorkspaceSummaryResponse,
     PersonalContextUpdate, PersonalContextResponse,
     ChatRequest, ChatResponse,
     SessionCreate, SessionSummary, SessionDetail, MessageDetail, ArtifactSchema,
@@ -28,6 +28,28 @@ from app.core.config import settings
 
 
 router = APIRouter()
+
+def user_model_to_profile(user: UserModel) -> UserProfile:
+    return UserProfile(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        role=getattr(user, "role", "Product Builder") or "Product Builder",
+        company=getattr(user, "company", "") or "",
+        industry=getattr(user, "industry", "B2B SaaS") or "B2B SaaS",
+        experience_level=getattr(user, "experience_level", "Senior") or "Senior",
+        location=getattr(user, "location", "") or "",
+        tagline=getattr(user, "tagline", "Exploring growth, product strategy, and AI-powered products.") or "Exploring growth, product strategy, and AI-powered products.",
+        interests=getattr(user, "interests", None) or ["Product Strategy", "Growth", "Retention", "PMF", "AI"],
+        focus_goal=getattr(user, "focus_goal", "Improve activation and time-to-value") or "Improve activation and time-to-value",
+        focus_metric=getattr(user, "focus_metric", "Activation Rate") or "Activation Rate",
+        focus_challenge=getattr(user, "focus_challenge", "Users are signing up but dropping off before reaching their primary Aha! milestone.") or "Users are signing up but dropping off before reaching their primary Aha! milestone.",
+        focus_progress=getattr(user, "focus_progress", 65) if getattr(user, "focus_progress", None) is not None else 65,
+        privacy_use_context=getattr(user, "privacy_use_context", True) if getattr(user, "privacy_use_context", None) is not None else True,
+        privacy_personalize_explore=getattr(user, "privacy_personalize_explore", True) if getattr(user, "privacy_personalize_explore", None) is not None else True,
+        privacy_use_history=getattr(user, "privacy_use_history", False) if getattr(user, "privacy_use_history", None) is not None else False,
+        created_at=user.created_at
+    )
 
 # --- Health & Diagnostic ---
 @router.get("/health", response_model=HealthStatus)
@@ -58,7 +80,17 @@ async def signup(req: UserSignup, db: AsyncSession = Depends(get_db)):
     new_user = UserModel(
         name=req.name.strip(),
         email=clean_email,
-        password_hash=hash_password(req.password)
+        password_hash=hash_password(req.password),
+        role="Product Builder",
+        tagline="Exploring growth, product strategy, and AI-powered products.",
+        interests=["Product Strategy", "Growth", "Retention", "PMF", "AI"],
+        focus_goal="Improve activation and time-to-value",
+        focus_metric="Activation Rate",
+        focus_challenge="Users are signing up but dropping off before reaching their primary Aha! milestone.",
+        focus_progress=65,
+        privacy_use_context=True,
+        privacy_personalize_explore=True,
+        privacy_use_history=False
     )
     db.add(new_user)
     await db.commit()
@@ -80,12 +112,7 @@ async def signup(req: UserSignup, db: AsyncSession = Depends(get_db)):
     return AuthResponse(
         access_token=token,
         token_type="bearer",
-        user=UserProfile(
-            id=new_user.id,
-            name=new_user.name,
-            email=new_user.email,
-            created_at=new_user.created_at
-        )
+        user=user_model_to_profile(new_user)
     )
 
 @router.post("/auth/login", response_model=AuthResponse)
@@ -106,26 +133,236 @@ async def login(req: UserLogin, db: AsyncSession = Depends(get_db)):
     return AuthResponse(
         access_token=token,
         token_type="bearer",
-        user=UserProfile(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            created_at=user.created_at
-        )
+        user=user_model_to_profile(user)
     )
 
 @router.get("/auth/me", response_model=UserProfile)
+@router.get("/me", response_model=UserProfile)
+@router.get("/user/profile", response_model=UserProfile)
 async def get_current_user_profile(user: UserModel = Depends(get_current_user)):
-    return UserProfile(
-        id=user.id,
-        name=user.name,
-        email=user.email,
-        created_at=user.created_at
+    return user_model_to_profile(user)
+
+@router.patch("/me", response_model=UserProfile)
+@router.patch("/user/profile", response_model=UserProfile)
+@router.put("/user/profile", response_model=UserProfile)
+async def update_current_user_profile(
+    req: UserProfileUpdate,
+    user: UserModel = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if req.name is not None and req.name.strip():
+        user.name = req.name.strip()
+    if req.role is not None:
+        user.role = req.role.strip()
+    if req.company is not None:
+        user.company = req.company.strip()
+    if req.industry is not None:
+        user.industry = req.industry.strip()
+    if req.experience_level is not None:
+        user.experience_level = req.experience_level.strip()
+    if req.location is not None:
+        user.location = req.location.strip()
+    if req.tagline is not None:
+        user.tagline = req.tagline.strip()
+    if req.interests is not None:
+        user.interests = [t.strip() for t in req.interests if t.strip()]
+    if req.focus_goal is not None:
+        user.focus_goal = req.focus_goal.strip()
+    if req.focus_metric is not None:
+        user.focus_metric = req.focus_metric.strip()
+    if req.focus_challenge is not None:
+        user.focus_challenge = req.focus_challenge.strip()
+    if req.focus_progress is not None:
+        user.focus_progress = max(0, min(100, req.focus_progress))
+    if req.privacy_use_context is not None:
+        user.privacy_use_context = req.privacy_use_context
+    if req.privacy_personalize_explore is not None:
+        user.privacy_personalize_explore = req.privacy_personalize_explore
+    if req.privacy_use_history is not None:
+        user.privacy_use_history = req.privacy_use_history
+
+    await db.commit()
+    await db.refresh(user)
+    return user_model_to_profile(user)
+
+@router.get("/me/workspace", response_model=WorkspaceSummaryResponse)
+@router.get("/user/workspace", response_model=WorkspaceSummaryResponse)
+async def get_user_workspace_summary(
+    user: UserModel = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    # 1. Fetch user's sessions & messages
+    s_stmt = select(SessionModel).where(SessionModel.user_id == user.id).options(selectinload(SessionModel.messages))
+    s_res = await db.execute(s_stmt)
+    user_sessions = s_res.scalars().all()
+    
+    total_sessions = len(user_sessions)
+    total_messages = sum(len(s.messages) for s in user_sessions)
+    
+    # 2. Fetch user's artifacts
+    art_stmt = select(ArtifactModel).where(ArtifactModel.user_id == user.id).order_by(desc(ArtifactModel.created_at))
+    art_res = await db.execute(art_stmt)
+    user_artifacts = art_res.scalars().all()
+    
+    total_artifacts = len(user_artifacts)
+    total_decisions = sum(1 for a in user_artifacts if a.meta and a.meta.get("type") == "decision_memo")
+    total_experiments = sum(1 for a in user_artifacts if a.meta and a.meta.get("type") == "experiment_brief")
+    total_frameworks = sum(1 for a in user_artifacts if a.meta and a.meta.get("type") == "framework_tree")
+    total_essays = sum(1 for a in user_artifacts if a.meta and a.meta.get("type") == "ship30_essay" or a.artifact_type == "markdown" and "Atomic Essay" in a.title)
+    
+    # 3. Compute Knowledge DNA and explored topics from real citations & session titles
+    topic_weights = {}
+    explored_episodes = set()
+    
+    for s in user_sessions:
+        for m in s.messages:
+            if m.citations:
+                for c in m.citations:
+                    if isinstance(c, dict) and c.get("episode_title"):
+                        explored_episodes.add(c["episode_title"])
+            if m.role == "user":
+                content_lower = m.content.lower()
+                if "pmf" in content_lower or "product-market fit" in content_lower:
+                    topic_weights["PMF"] = topic_weights.get("PMF", 0) + 3
+                if "retention" in content_lower or "churn" in content_lower:
+                    topic_weights["Retention"] = topic_weights.get("Retention", 0) + 3
+                if "growth" in content_lower or "acquisition" in content_lower:
+                    topic_weights["Growth"] = topic_weights.get("Growth", 0) + 3
+                if "activation" in content_lower or "onboarding" in content_lower:
+                    topic_weights["Activation"] = topic_weights.get("Activation", 0) + 3
+                if "strategy" in content_lower or "lno" in content_lower:
+                    topic_weights["Product Strategy"] = topic_weights.get("Product Strategy", 0) + 3
+                if "ai" in content_lower or "llm" in content_lower:
+                    topic_weights["AI"] = topic_weights.get("AI", 0) + 3
+
+    # Add weight from user's stated interests
+    user_interests = getattr(user, "interests", []) or ["Product Strategy", "Growth", "Retention", "PMF", "AI"]
+    for intr in user_interests:
+        topic_weights[intr] = topic_weights.get(intr, 0) + 2
+
+    # Calculate Knowledge DNA percentage distribution
+    total_weight = sum(topic_weights.values()) or 1
+    knowledge_dna = []
+    sorted_topics = sorted(topic_weights.items(), key=lambda x: x[1], reverse=True)[:5]
+    for top_name, weight in sorted_topics:
+        pct = round((weight / total_weight) * 100)
+        knowledge_dna.append({
+            "topic": top_name,
+            "percentage": pct,
+            "count": weight
+        })
+
+    # Active learning progress
+    active_learning = [
+        {"topic": t["topic"], "progress": min(100, t["percentage"] * 2 + 25), "level": "Active"}
+        for t in knowledge_dna[:3]
+    ] if knowledge_dna else [
+        {"topic": "Product Strategy", "progress": 60, "level": "Active"},
+        {"topic": "Growth", "progress": 45, "level": "Active"},
+        {"topic": "Retention", "progress": 30, "level": "Active"}
+    ]
+
+    # Recent thinking timeline (pure real user activity)
+    recent_thinking = []
+    for a in user_artifacts[:6]:
+        art_type_label = a.meta.get("type", a.artifact_type) if a.meta else a.artifact_type
+        clean_label = "Decision Memo" if "decision" in art_type_label else "Experiment Brief" if "experiment" in art_type_label else "Framework" if "framework" in art_type_label else "Ship 30 Essay" if "ship30" in art_type_label else "Artifact"
+        recent_thinking.append({
+            "id": a.id,
+            "type": "artifact",
+            "category": clean_label,
+            "title": a.title,
+            "date": a.created_at.strftime("%b %d") if a.created_at else "Recently",
+            "raw_date": a.created_at.isoformat() if a.created_at else ""
+        })
+    for s in user_sessions[:4]:
+        if s.title != "New Discussion" or len(s.messages) > 0:
+            recent_thinking.append({
+                "id": s.id,
+                "type": "session",
+                "category": "Research Discussion",
+                "title": s.title,
+                "date": s.updated_at.strftime("%b %d") if s.updated_at else "Recently",
+                "raw_date": s.updated_at.isoformat() if s.updated_at else ""
+            })
+    recent_thinking.sort(key=lambda x: x["raw_date"], reverse=True)
+
+    # Recommendations based on user interests
+    recommendations = [
+        {
+            "type": "episode",
+            "title": "Brian Chesky on 11-Star Product Experiences and Founder-Led Growth",
+            "guest": "Brian Chesky",
+            "topic": "Product Strategy",
+            "reason": "Matches your focus on Product Strategy & Activation"
+        },
+        {
+            "type": "episode",
+            "title": "Shreyas Doshi on High-Leverage Product Management and the LNO Framework",
+            "guest": "Shreyas Doshi",
+            "topic": "Product Strategy",
+            "reason": f"High-leverage decision framework for {user.role or 'Product Leaders'}"
+        },
+        {
+            "type": "framework",
+            "title": "Sean Ellis 40% PMF Leading Indicator Diagnostic",
+            "guest": "Rahul Vohra",
+            "topic": "PMF",
+            "reason": "Benchmark your product against leading market indicators"
+        }
+    ]
+
+    # Calculate Profile Completeness
+    completeness_fields = [
+        bool(user.name),
+        bool(user.role),
+        bool(user.tagline),
+        bool(user.focus_goal),
+        bool(user.focus_metric),
+        bool(user.focus_challenge),
+        bool(user.interests and len(user.interests) > 0),
+        bool(user.industry)
+    ]
+    completeness = round((sum(completeness_fields) / len(completeness_fields)) * 100)
+
+    # Fetch personal context if present
+    ctx_stmt = select(PersonalContextModel).where(PersonalContextModel.user_id == user.id)
+    ctx_res = await db.execute(ctx_stmt)
+    ctx_obj = ctx_res.scalar_one_or_none()
+    ctx_dict = None
+    if ctx_obj:
+        ctx_dict = {
+            "company_type": ctx_obj.company_type,
+            "users_scale": ctx_obj.users_scale,
+            "activation_rate": ctx_obj.activation_rate,
+            "problem": ctx_obj.problem,
+            "constraints": ctx_obj.constraints
+        }
+
+    return WorkspaceSummaryResponse(
+        user=user_model_to_profile(user),
+        context=ctx_dict,
+        stats={
+            "total_sessions": total_sessions,
+            "total_messages": total_messages,
+            "total_artifacts": total_artifacts,
+            "total_decisions": total_decisions,
+            "total_experiments": total_experiments,
+            "total_frameworks": total_frameworks,
+            "total_essays": total_essays,
+            "explored_episodes_count": len(explored_episodes)
+        },
+        knowledge_dna=knowledge_dna,
+        recent_thinking=recent_thinking[:10],
+        active_learning=active_learning,
+        recommendations=recommendations,
+        profile_completeness=completeness
     )
 
 @router.post("/auth/logout")
 async def logout():
     return {"message": "Successfully signed out. Session token cleared."}
+
 
 # --- Personal Context & Company Profile Endpoints ---
 @router.get("/user/context", response_model=PersonalContextResponse)

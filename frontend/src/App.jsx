@@ -16,6 +16,7 @@ import EpisodeDetailModal from './components/EpisodeDetailModal';
 import ContextApplicationModal from './components/ContextApplicationModal';
 import DecisionModeModal from './components/DecisionModeModal';
 import AuthModal from './components/AuthModal';
+import ProfileWorkspace from './components/ProfileWorkspace';
 
 const getTabFromPath = (pathname) => {
   const path = (pathname || '').toLowerCase().replace(/\/$/, '');
@@ -26,8 +27,10 @@ const getTabFromPath = (pathname) => {
   if (path === '/artifacts' || path === '/library') return 'artifacts';
   if (path === '/slides' || path === '/deck') return 'slides';
   if (path === '/sources' || path === '/transcripts' || path === '/kb') return 'sources';
+  if (path === '/profile' || path === '/workspace') return 'workspace';
   return 'home';
 };
+
 
 export default function App() {
   // Navigation & View State (with direct browser URL sync)
@@ -487,7 +490,27 @@ export default function App() {
         {activeTab === 'slides' && (
           <PresentationDeck />
         )}
+
+        {/* Screen 15: Personal Profile & Workspace Headquarters */}
+        {activeTab === 'workspace' && (
+          <ProfileWorkspace 
+            currentUser={currentUser}
+            onUpdateUser={(updated) => setCurrentUser(updated)}
+            onStartChat={handleStartChatWithPrompt}
+            onOpenArtifact={(art) => {
+              setActiveArtifact(art);
+              navigateToTab('chat');
+            }}
+            onExploreTopic={(topic) => {
+              setExploreSelectedTopic(topic);
+              navigateToTab('explore');
+            }}
+            onOpenWritingStudio={() => navigateToTab('writing')}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
+          />
+        )}
       </main>
+
 
       {/* Global Modals & Drawers */}
       <SettingsModal 

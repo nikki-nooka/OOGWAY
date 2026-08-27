@@ -49,12 +49,39 @@ async def init_db():
             
             # Auto-migrate columns & constraints for SQLite
             try:
-                if "sqlite" in database_url:
+                    # Check and alter users table
+                    res_user = await conn.execute(text("PRAGMA table_info(users)"))
+                    user_cols = [row[1] for row in res_user.fetchall()]
+                    columns_to_add = [
+                        ("role", "VARCHAR(100)"),
+                        ("company", "VARCHAR(100)"),
+                        ("industry", "VARCHAR(100)"),
+                        ("experience_level", "VARCHAR(50)"),
+                        ("location", "VARCHAR(100)"),
+                        ("tagline", "VARCHAR(255)"),
+                        ("interests", "JSON"),
+                        ("focus_goal", "VARCHAR(255)"),
+                        ("focus_metric", "VARCHAR(100)"),
+                        ("focus_challenge", "TEXT"),
+                        ("focus_progress", "INTEGER"),
+                        ("privacy_use_context", "BOOLEAN"),
+                        ("privacy_personalize_explore", "BOOLEAN"),
+                        ("privacy_use_history", "BOOLEAN"),
+                    ]
+                    for col_name, col_type in columns_to_add:
+                        if col_name not in user_cols:
+                            try:
+                                await conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                            except Exception as col_err:
+                                logger.warning(f"Error adding {col_name} to users: {col_err}")
+
                     # Check and alter sessions table
                     res = await conn.execute(text("PRAGMA table_info(sessions)"))
                     columns = [row[1] for row in res.fetchall()]
                     if "user_id" not in columns:
                         await conn.execute(text("ALTER TABLE sessions ADD COLUMN user_id VARCHAR(36)"))
+
+
                     
                     # Check artifacts table columns
                     res_art = await conn.execute(text("PRAGMA table_info(artifacts)"))

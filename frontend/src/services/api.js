@@ -67,10 +67,45 @@ export const api = {
   },
 
   async getMe() {
-    const res = await fetch(`${API_BASE}/auth/me`, {
+    const res = await fetch(`${API_BASE}/me`, {
       headers: getHeaders(),
     });
     if (!res.ok) throw new Error('Unauthorized');
+    const user = await res.json();
+    authStorage.setUser(user);
+    return user;
+  },
+
+  async getProfile() {
+    const res = await fetch(`${API_BASE}/me`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Unauthorized');
+    const user = await res.json();
+    authStorage.setUser(user);
+    return user;
+  },
+
+  async updateProfile(profileData) {
+    const res = await fetch(`${API_BASE}/me`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(profileData),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Failed to update profile');
+    }
+    const updatedUser = await res.json();
+    authStorage.setUser(updatedUser);
+    return updatedUser;
+  },
+
+  async getWorkspaceSummary() {
+    const res = await fetch(`${API_BASE}/me/workspace`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to load workspace summary');
     return res.json();
   },
 
@@ -84,6 +119,7 @@ export const api = {
       authStorage.logout();
     }
   },
+
 
   // --- Personal Workspace Context ---
   async getUserContext() {

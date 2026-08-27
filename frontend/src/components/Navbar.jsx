@@ -240,6 +240,53 @@ export default function Navbar({
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
+                      onSelectTab('workspace');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 14px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    className="dropdown-item"
+                  >
+                    <User size={14} color="var(--accent-primary)" />
+                    <span>My Workspace & Profile</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      onSelectTab('sources');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 14px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    className="dropdown-item"
+                  >
+                    <BookOpen size={14} />
+                    <span>Saved Knowledge</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
                       if (onOpenContext) onOpenContext();
                     }}
                     style={{
@@ -282,6 +329,7 @@ export default function Navbar({
                     <Settings size={14} />
                     <span>Settings & Privacy</span>
                   </button>
+
 
                   <button
                     onClick={() => {
