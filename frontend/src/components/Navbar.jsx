@@ -35,8 +35,9 @@ export default function Navbar({
 
   const getInitials = (name) => {
     if (!name) return 'U';
-    return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+    return String(name).split(' ').map(p => p[0]).filter(Boolean).join('').toUpperCase().slice(0, 2) || 'U';
   };
+
 
   return (
     <header className="navbar-editorial">
@@ -188,10 +189,10 @@ export default function Navbar({
                 fontSize: '0.75rem',
                 fontWeight: 700
               }}>
-                {getInitials(currentUser.name)}
+                {getInitials(currentUser?.name || currentUser?.email)}
               </div>
               <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                {currentUser.name.split(' ')[0]}
+                {(currentUser?.name || currentUser?.email || 'User').split(' ')[0]}
               </span>
             </button>
 
@@ -218,11 +219,12 @@ export default function Navbar({
                 }}>
                   <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-primary)' }}>
-                      {currentUser.name}
+                      {currentUser?.name || 'Product Builder'}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {currentUser.email}
+                      {currentUser?.email || 'private@workspace'}
                     </div>
+
                     <div style={{ 
                       display: 'inline-block', 
                       fontSize: '0.7rem', 
