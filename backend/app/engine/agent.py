@@ -152,18 +152,19 @@ Please provide a structured, grounded response citing relevant guests and timest
                     f"*— Timestamp: **{ch.timestamp}** | [Watch / Listen Link]({ch.source_url})*\n"
                 )
 
-            raw_text = f"""Based on transcripts from **Lenny's Podcast**, here is the grounded insight regarding **{user_message}**:
+            formatted_points = "\n".join(dynamic_points)
+            formatted_sources = "\n".join([f"- [{i}] *{c['guest']}* — {c['episode_title']} ({c['timestamp']})" for i, c in enumerate(citations, 1)])
 
-{"\n".join(dynamic_points)}
-
----
-
-### Tactical Growth Takeaway
-- **Validate through Data:** Apply leading indicator metrics to measure user engagement early.
-- **Listen to Power Users:** Align your roadmap directly with retained customers rather than top-of-funnel noise.
-
-**Sources Cited:**
-""" + "\n".join([f"- [{i}] *{c['guest']}* — {c['episode_title']} ({c['timestamp']})" for i, c in enumerate(citations, 1)])
+            raw_text = (
+                f"Based on transcripts from **Lenny's Podcast**, here is the grounded insight regarding **{user_message}**:\n\n"
+                f"{formatted_points}\n\n"
+                "---\n\n"
+                "### Tactical Growth Takeaway\n"
+                "- **Validate through Data:** Apply leading indicator metrics to measure user engagement early.\n"
+                "- **Listen to Power Users:** Align your roadmap directly with retained customers rather than top-of-funnel noise.\n\n"
+                "**Sources Cited:**\n"
+                f"{formatted_sources}"
+            )
 
         # 6. Extract and sanitize any artifacts
         extracted_artifacts = artifact_engine.extract_artifacts(raw_text, user_message)
